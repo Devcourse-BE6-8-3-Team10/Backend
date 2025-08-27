@@ -1,0 +1,26 @@
+## 서버리스 방식이 아니라 더이상 사용하지 않습니다.
+#steps:
+#  # 1. Docker 이미지 빌드
+#  - name: 'gcr.io/cloud-builders/docker'
+#    args: ['build', '-t', 'asia-northeast3-docker.pkg.dev/$PROJECT_ID/my-repo/spring-boot-app:latest', '.']
+#
+#  # 2. 빌드한 이미지를 Artifact Registry에 푸시
+#  - name: 'gcr.io/cloud-builders/docker'
+#    args: ['push', 'asia-northeast3-docker.pkg.dev/$PROJECT_ID/my-repo/spring-boot-app:latest']
+#
+#  # 3. Cloud Run 서비스에 배포
+#  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+#    entrypoint: gcloud
+#    args:
+#      - 'run'
+#      - 'deploy'
+#      - 'spring-boot-app' # 서비스 이름
+#      - '--image=asia-northeast3-docker.pkg.dev/$PROJECT_ID/my-repo/spring-boot-app:latest'
+#      - '--platform=managed'
+#      - '--region=asia-northeast3'
+#      - '--allow-unauthenticated'
+#      - '--port=8080'
+#      - '--vpc-connector=dev10-vpc-connector'
+#      - '--vpc-egress=all-traffic'
+#      - '--set-env-vars=DB_HOST=10.36.16.3,DB_NAME=dev10-cloudsql,DB_USER=root,REDIS_HOST=10.36.17.3,GCS_BUCKET_NAME=team10_bucket'
+#      - '--update-secrets=SPRING_DATASOURCE_PASSWORD=db-password:latest,JWT_SECRET=jwt-secret:latest'

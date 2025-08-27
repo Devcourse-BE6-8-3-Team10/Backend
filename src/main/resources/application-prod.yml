@@ -1,0 +1,44 @@
+spring:
+  # --- 데이터베이스 및 레디스 설정 ---
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST}:3306/${DB_NAME}?serverTimezone=Asia/Seoul&useSSL=false
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+
+  # JPA 설정
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update #or none
+    properties:
+      hibernate:
+        # 배포 환경 sql로그 간소화
+        format_sql: false
+        show_sql: false
+
+  # 객체 스토리지(GCS, S3 등)
+  cloud:
+    gcp:
+      # Cloud Run 환경에서는 서비스 계정을 통해서 자동 인증
+#      project-id: ${GCP_PROJECT_ID}
+#      credentials:
+#        location: ${GCP_CREDENTIALS_LOCATION}
+      storage:
+        bucket-name: ${GCP_BUCKET_NAME}
+
+jwt:
+  # 필수 보안: JWT 시크릿 키는 반드시 환경 변수로 처리해야 합니다.
+  secret: ${JWT_SECRET}
+  access-token-validity: 1800000
+  refresh-token-validity: 604800000
+
+logging:
+  # 프로덕션 환경에서는 INFO 레벨로 로그를 설정하여 불필요한 로그를 줄입니다.
+  level:
+    root: INFO
+    com.back: INFO
