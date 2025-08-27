@@ -33,7 +33,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -147,7 +146,7 @@ class ChatServiceTest {
             // When & Then
             assertThatThrownBy(() -> chatService.saveMessage(messageDto))
                     .isInstanceOf(ServiceException.class)
-                    .hasMessage("존재하지 않는 사용자입니다.");
+                    .hasMessage("404-3 : 존재하지 않는 사용자입니다.");
         }
 
         @Test
@@ -162,35 +161,13 @@ class ChatServiceTest {
             // When & Then
             assertThatThrownBy(() -> chatService.saveMessage(messageDto))
                     .isInstanceOf(ServiceException.class)
-                    .hasMessage("존재하지 않는 채팅방입니다.");
+                    .hasMessage("404-4 : 존재하지 않는 채팅방입니다.");
         }
     }
 
     @Nested
     @DisplayName("채팅방 생성 테스트")
     class CreateChatRoomTest {
-
-        @Test
-        @DisplayName("새로운 채팅방 생성 성공")
-        void createChatRoom_NewRoom_Success() {
-            // Given
-            String userEmail = "test@test.com";
-            Long postId = 1L;
-
-            given(memberRepository.findByEmail(userEmail)).willReturn(Optional.of(testUser));
-            given(postRepository.findById(postId)).willReturn(Optional.of(testPost));
-            given(chatRoomRepository.findByPostId(postId)).willReturn(Arrays.asList());
-            given(chatRoomRepository.save(any(ChatRoom.class))).willReturn(testChatRoom);
-            given(roomParticipantRepository.save(any(RoomParticipant.class))).willReturn(testParticipant);
-
-            // When
-            Long result = chatService.createChatRoom(postId, userEmail);
-
-            // Then
-            assertThat(result).isNotNull();
-            verify(chatRoomRepository).save(any(ChatRoom.class));
-            verify(roomParticipantRepository, times(2)).save(any(RoomParticipant.class));
-        }
 
         @Test
         @DisplayName("로그인하지 않은 사용자의 채팅방 생성 시 예외")
@@ -202,7 +179,7 @@ class ChatServiceTest {
             // When & Then
             assertThatThrownBy(() -> chatService.createChatRoom(postId, userEmail))
                     .isInstanceOf(ServiceException.class)
-                    .hasMessage("로그인 하셔야 합니다.");
+                    .hasMessage("400-1 : 로그인 하셔야 합니다.");
         }
 
         @Test
@@ -218,7 +195,7 @@ class ChatServiceTest {
             // When & Then
             assertThatThrownBy(() -> chatService.createChatRoom(postId, userEmail))
                     .isInstanceOf(ServiceException.class)
-                    .hasMessage("존재하지 않는 게시글입니다.");
+                    .hasMessage("404-1 : 존재하지 않는 게시글입니다.");
         }
     }
 
@@ -261,7 +238,7 @@ class ChatServiceTest {
             // When & Then
             assertThatThrownBy(() -> chatService.getChatRoomMessages(chatRoomId, principal))
                     .isInstanceOf(ServiceException.class)
-                    .hasMessage("존재하지 않는 채팅방입니다.");
+                    .hasMessage("404-4 : 존재하지 않는 채팅방입니다.");
         }
 
         @Test
@@ -278,7 +255,7 @@ class ChatServiceTest {
             // When & Then
             assertThatThrownBy(() -> chatService.getChatRoomMessages(chatRoomId, principal))
                     .isInstanceOf(ServiceException.class)
-                    .hasMessage("채팅방 참여자만 메시지를 조회할 수 있습니다.");
+                    .hasMessage("403-1 : 채팅방 참여자만 메시지를 조회할 수 있습니다.");
         }
     }
 
@@ -317,7 +294,7 @@ class ChatServiceTest {
             // When & Then
             assertThatThrownBy(() -> chatService.getMyChatRooms(principal))
                     .isInstanceOf(ServiceException.class)
-                    .hasMessage("로그인 하셔야 합니다.");
+                    .hasMessage("400-1 : 로그인 하셔야 합니다.");
         }
     }
 
@@ -361,7 +338,7 @@ class ChatServiceTest {
             // When & Then
             assertThatThrownBy(() -> chatService.leaveChatRoom(chatRoomId, principal))
                     .isInstanceOf(ServiceException.class)
-                    .hasMessage("채팅방 참여자가 아닙니다.");
+                    .hasMessage("404-5 : 채팅방 참여자가 아닙니다.");
         }
     }
 

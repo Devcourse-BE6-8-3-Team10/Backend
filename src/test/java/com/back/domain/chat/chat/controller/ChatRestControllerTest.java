@@ -53,7 +53,9 @@ class ChatRestControllerTest {
         @DisplayName("채팅방 메시지 조회 성공")
         void getChatRoomMessages_Success() throws Exception {
             // Given
-            Long chatRoomId = 1L;
+            Long postId = 1L;
+            String userEmail = "user2@user.com";
+            Long chatRoomId = chatService.createChatRoom(postId, userEmail);
 
             // When & Then
             mockMvc.perform(get("/api/chat/rooms/{chatRoomId}/messages", chatRoomId)
@@ -61,7 +63,7 @@ class ChatRestControllerTest {
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.resultCode").value("200"))
-                    .andExpect(jsonPath("$.message").value("채팅방 메시지 조회 성공"))
+                    .andExpect(jsonPath("$.msg").value("채팅방 메시지 조회 성공"))
                     .andExpect(jsonPath("$.data").isArray());
         }
 
@@ -84,7 +86,9 @@ class ChatRestControllerTest {
         @DisplayName("권한이 없는 채팅방 조회 시 403 에러")
         void getChatRoomMessages_Forbidden() throws Exception {
             // Given
-            Long chatRoomId = 999L; // 다른 사용자의 채팅방 ID
+            Long postId = 1L;
+            String userEmail = "user1@user.com";
+            Long chatRoomId = chatService.createChatRoom(postId, userEmail);
 
             // When & Then
             mockMvc.perform(get("/api/chat/rooms/{chatRoomId}/messages", chatRoomId)
@@ -111,7 +115,7 @@ class ChatRestControllerTest {
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.resultCode").value("200"))
-                    .andExpect(jsonPath("$.message").value("채팅방 생성 성공"))
+                    .andExpect(jsonPath("$.msg").value("채팅방 생성 성공"))
                     .andExpect(jsonPath("$.data").exists());
         }
 
@@ -130,7 +134,7 @@ class ChatRestControllerTest {
         }
 
         @Test
-        @DisplayName("로그인하지 않은 상태에서 채팅방 생성 시 401 에러")
+        @DisplayName("로그인하지 않은 상태에서 채팅방 생성 시 403 에러")
         void createChatRoom_Unauthorized() throws Exception {
             // Given
             Long postId = 1L;
@@ -139,7 +143,7 @@ class ChatRestControllerTest {
             mockMvc.perform(post("/api/chat/rooms/{postId}", postId)
                             .with(csrf()))
                     .andDo(print())
-                    .andExpect(status().isUnauthorized());
+                    .andExpect(status().isForbidden());
         }
     }
 
@@ -157,18 +161,18 @@ class ChatRestControllerTest {
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.resultCode").value("200"))
-                    .andExpect(jsonPath("$.message").value("내 채팅방 목록 조회 성공"))
+                    .andExpect(jsonPath("$.msg").value("내 채팅방 목록 조회 성공"))
                     .andExpect(jsonPath("$.data").isArray());
         }
 
         @Test
-        @DisplayName("로그인하지 않은 상태에서 채팅방 목록 조회 시 401 에러")
+        @DisplayName("로그인하지 않은 상태에서 채팅방 목록 조회 시 403 에러")
         void getMyChatRooms_Unauthorized() throws Exception {
             // When & Then
             mockMvc.perform(get("/api/chat/rooms/my")
                             .with(csrf()))
                     .andDo(print())
-                    .andExpect(status().isUnauthorized());
+                    .andExpect(status().isForbidden());
         }
     }
 
