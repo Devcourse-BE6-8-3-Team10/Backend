@@ -2,6 +2,10 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.spring") version "1.9.25"
+    kotlin("plugin.jpa") version "1.9.25"
+    kotlin("kapt") version "1.9.25" // Lombok 사용 시 필요한 플러그인
 }
 val springCloudGcpVersion by extra("7.0.0")
 
@@ -25,6 +29,10 @@ repositories {
 }
 
 dependencies {
+    // Kotlin 관련 의존성 추가
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
