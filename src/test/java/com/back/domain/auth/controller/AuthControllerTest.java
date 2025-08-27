@@ -358,6 +358,6 @@ public class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.resultCode").value("403-1"))
-                .andExpect(jsonPath("$.msg").value("이메일 또는 비밀번호가 잘못되었습니다."));
+                .andExpect(jsonPath("$.msg").value("탈퇴한 회원입니다."));
     }
 }
