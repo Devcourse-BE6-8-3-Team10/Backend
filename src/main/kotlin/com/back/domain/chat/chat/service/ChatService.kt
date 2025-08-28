@@ -82,7 +82,9 @@ class ChatService(
 
     @Transactional
     fun createChatRoom(postId: Long, userEmail: String): Long {
-        require(userEmail.isNotBlank()) { throw ServiceException("400-1", "로그인 하셔야 합니다.") }
+        if (userEmail.isBlank()) {
+            throw ServiceException("400-1", "로그인 하셔야 합니다.")
+        }
 
         // 이메일로 Member 엔티티 조회
         val requester = memberRepository.findByEmail(userEmail)
@@ -151,7 +153,9 @@ class ChatService(
 
     @Transactional
     fun getMyChatRooms(principal: Principal): List<ChatRoomDto> {
-        require(principal.getName().isNotBlank()) { throw ServiceException("400-1", "로그인 하셔야 합니다.") }
+        if (principal.getName().isBlank()) {
+            throw ServiceException("400-1", "로그인 하셔야 합니다.")
+        }
 
         // 이메일로 Member 엔티티 조회
         val member = memberRepository.findByEmail(principal.getName())

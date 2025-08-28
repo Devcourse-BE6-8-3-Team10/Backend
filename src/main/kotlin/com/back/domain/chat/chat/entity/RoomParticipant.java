@@ -5,13 +5,11 @@ import com.back.global.jpa.entity.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
-@Setter
 public class RoomParticipant extends BaseEntity {
     // room , user 메니투원 설정
     @ManyToOne
