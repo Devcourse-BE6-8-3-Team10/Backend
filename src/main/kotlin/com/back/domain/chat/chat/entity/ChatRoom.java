@@ -12,7 +12,6 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor
-@Getter
 @Setter
 public class ChatRoom extends BaseEntity {
     // 게시글 매니투원 설정
@@ -47,5 +46,25 @@ public class ChatRoom extends BaseEntity {
         this.post = post;
         this.member = member;
         this.roomName = customRoomName;
+    }
+
+    public Post getPost() {
+        return post;
+    }
+
+    public Member getMember() {
+        return member;
+    }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public List<RoomParticipant> getParticipants() {
+        return participants;
     }
 }
