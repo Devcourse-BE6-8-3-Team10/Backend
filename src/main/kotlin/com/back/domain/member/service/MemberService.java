@@ -33,14 +33,14 @@ public class MemberService {
     public void signup(MemberSignupRequest request) {
 
         // 1. 이메일 중복 검사
-        if (memberRepository.existsByEmail(request.email())) {
+        if (memberRepository.existsByEmail(request.getEmail())) {
             throw new ServiceException(ResultCode.DUPLICATE_EMAIL.code(), "이미 사용 중인 이메일입니다.");
         }
 
         Member member = Member.builder()
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .name(request.name())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .name(request.getName())
                 .build();
 
         memberRepository.save(member);

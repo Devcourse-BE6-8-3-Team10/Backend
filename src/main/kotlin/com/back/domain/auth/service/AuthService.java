@@ -36,7 +36,7 @@ public class AuthService {
         try {
             // 1. 인증 시도
             UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(request.email(), request.password());
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
 
             Authentication authentication = authenticationManager.authenticate(authToken);
 
@@ -75,7 +75,7 @@ public class AuthService {
     // Access Token 재발급
     @Transactional
     public TokenReissueResponse reissueAccessToken(TokenReissueRequest request) {
-        String refreshToken = request.refreshToken();
+        String refreshToken = request.getRefreshToken();
 
         // 1. 토큰 유효성 확인
         if (!jwtTokenProvider.validateToken(refreshToken)) {
