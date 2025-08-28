@@ -45,4 +45,20 @@ public class RoomParticipant extends BaseEntity {
     public boolean isActive() {
         return isActive;
     }
+
+    public void setChatRoom(ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
+
+    public void setLeftAt(LocalDateTime leftAt) {
+        this.leftAt = leftAt;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
 }

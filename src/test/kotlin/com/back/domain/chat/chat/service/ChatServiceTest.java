@@ -326,7 +326,6 @@ class ChatServiceTest {
             given(roomParticipantRepository.findByChatRoomIdAndMemberIdAndIsActiveTrue(chatRoomId, testUser.getId()))
                     .willReturn(Optional.of(testParticipant));
             given(roomParticipantRepository.existsByChatRoomIdAndIsActiveTrue(chatRoomId)).willReturn(true);
-            given(roomParticipantRepository.findByChatRoomIdAndIsActiveTrue(chatRoomId)).willReturn(Arrays.asList());
 
             // When
             assertThatCode(() -> chatService.leaveChatRoom(chatRoomId, principal))
