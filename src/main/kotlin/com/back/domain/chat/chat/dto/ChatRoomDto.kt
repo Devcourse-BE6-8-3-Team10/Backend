@@ -4,5 +4,5 @@ data class ChatRoomDto(
     val id: Long,
     val name: String,
     val postId: Long,
-    val lastContent: String
+    val lastContent: String?
 )
