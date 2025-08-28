@@ -1,5 +1,6 @@
 package com.back.domain.member.dto.request
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
@@ -13,7 +14,9 @@ data class FindPasswordRequest(
     val email: String?,
 
     @field:Size(min = 8, max = 20, message = "비밀번호는 8자 이상 20자 이하여야 합니다.")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     val newPassword: String?,
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     val confirmPassword: String? = null
 ) 
