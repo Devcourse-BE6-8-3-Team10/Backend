@@ -11,7 +11,6 @@ import lombok.Setter;
 
 @Entity
 @NoArgsConstructor
-@Getter
 @Setter
 public class Message extends BaseEntity {
     //member, chatroom 관계 설정
@@ -31,5 +30,17 @@ public class Message extends BaseEntity {
     public Message(MessageDto chatMessage, Member sender) {
         this.sender = sender;
         this.content = chatMessage.getContent();
+    }
+
+    public ChatRoom getChatRoom() {
+        return chatRoom;
+    }
+
+    public Member getSender() {
+        return sender;
+    }
+
+    public String getContent() {
+        return content;
     }
 }
