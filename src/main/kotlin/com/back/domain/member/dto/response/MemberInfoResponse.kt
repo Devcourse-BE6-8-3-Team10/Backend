@@ -3,7 +3,7 @@ package com.back.domain.member.dto.response
 import com.back.domain.member.entity.Member
 
 data class MemberInfoResponse(
-    val id: Long?,
+    val id: Long,
     val email: String,
     val name: String,
     val role: String,
