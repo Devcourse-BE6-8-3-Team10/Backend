@@ -137,21 +137,21 @@ public class ChatService {
     public Long findExistingChatRoom(Long postId, Long requesterId, Long postAuthorId) {
         // 해당 게시글에 대한 요청자가 만든 채팅방이 있는지 확인 (활성/비활성 무관)
         List<ChatRoom> allPostChatRooms = chatRoomRepository.findByPostId(postId);
-        
+
         for (ChatRoom chatRoom : allPostChatRooms) {
             // 이 채팅방의 모든 참여자 확인 (활성/비활성 무관)
             List<RoomParticipant> allParticipants = roomParticipantRepository
                 .findByChatRoomId(chatRoom.getId());
-                
+
             log.debug("채팅방 " + chatRoom.getId() + " 전체 참여자 수: " + allParticipants.size());
-                
+
             // 참여자가 정확히 2명이고, 요청자와 postAuthor가 모두 포함되어 있는지 확인
             if (allParticipants.size() == 2) {
                 boolean hasRequester = allParticipants.stream()
                     .anyMatch(p -> p.getMember().getId().equals(requesterId));
                 boolean hasPostAuthor = allParticipants.stream()
                     .anyMatch(p -> p.getMember().getId().equals(postAuthorId));
-                    
+
                 if (hasRequester && hasPostAuthor) {
                     // 기존 채팅방 발견 - 두 참여자 모두 다시 활성화
                     for (RoomParticipant participant : allParticipants) {
@@ -159,7 +159,7 @@ public class ChatService {
                         participant.setLeftAt(null); // 나간 시간 초기화
                     }
                     roomParticipantRepository.saveAll(allParticipants);
-                    
+
                     log.debug("기존 채팅방 재활용: " + chatRoom.getId());
                     return chatRoom.getId();
                 }
@@ -240,13 +240,20 @@ public class ChatService {
             log.info("채팅방 ID: {}", chatRoomId);
 
             // 나가기 알림 메시지 생성
-            MessageDto leaveNotification = new MessageDto();
-            leaveNotification.setSender("System");
-            leaveNotification.setSenderName("시스템");
-            leaveNotification.setContent(leavingMember.getName() + "님이 채팅방을 나갔습니다.");
-            leaveNotification.setSenderId(-1L); // 시스템 메시지 구분용
-            leaveNotification.setChatRoomId(chatRoomId);
-            leaveNotification.setMessageType("LEAVE_NOTIFICATION"); // 메시지 타입 추가
+            MessageDto leaveNotification = new MessageDto(
+                    -1L, // senderId
+                    chatRoomId,
+                    "시스템", // senderName
+                    "system@devteam10.org", // senderEmail
+                    "${leavingMember.name}님이 채팅방을 나갔습니다.", // content
+                    "LEAVE_NOTIFICATION" // messageType
+            );
+//            leaveNotification.setSender("System");
+//            leaveNotification.setSenderName("시스템");
+//            leaveNotification.setContent(leavingMember.getName() + "님이 채팅방을 나갔습니다.");
+//            leaveNotification.setSenderId(-1L); // 시스템 메시지 구분용
+//            leaveNotification.setChatRoomId(chatRoomId);
+//            leaveNotification.setMessageType("LEAVE_NOTIFICATION"); // 메시지 타입 추가
 
             // Redis를 통해 알림 메시지 발송
             redisMessageService.publishMessage(leaveNotification);
