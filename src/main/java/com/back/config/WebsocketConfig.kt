@@ -35,6 +35,12 @@ class WebsocketConfig : WebSocketMessageBrokerConfigurer {
             override fun preSend(message: Message<*>, channel: MessageChannel): Message<*> {
                 val accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor::class.java)
 
+                // 지금 말고 나중에 이거 추가하셈 뭔가 지금하면 연결 안될거같음
+//                val auth = SecurityContextHolder.getContext().authentication
+//                if (auth?.isAuthenticated == true) {
+//                    accessor.user = auth
+//                }
+
                 if (accessor?.command == StompCommand.CONNECT) {
                     accessor.getFirstNativeHeader("user-email")?.let { userEmail ->
                         accessor.user = StompPrincipal(userEmail)
