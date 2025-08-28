@@ -63,9 +63,8 @@ public class ChatWebSocketController {
      */
     private void sendErrorMessage(String userEmail, String errorMessage) {
         try {
-            MessageDto errorMsg = new MessageDto();
-            errorMsg.setSender("System");
-            errorMsg.setContent(errorMessage);
+            MessageDto errorMsg = new MessageDto("System", errorMessage);
+
 
             messagingTemplate.convertAndSendToUser(
                     userEmail,
