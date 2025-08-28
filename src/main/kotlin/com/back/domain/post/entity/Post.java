@@ -10,7 +10,6 @@ import com.back.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
@@ -19,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Entity
-@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -28,44 +26,44 @@ public class Post extends BaseEntity {
     // Member ID(외래키)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
-    public Member member;
+    private Member member;
 
     @Column(nullable = false)
-    public String title; //제목
+    private String title; //제목
 
     @Column(columnDefinition = "TEXT",nullable = false)
-    public String description; //게시글 내용
+    private String description; //게시글 내용
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    public Category category; //특허 종류
+    private Category category; //특허 종류
 
     @Column(nullable = false)
-    public Integer price; //특허 가격
+    private Integer price; //특허 가격
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    public Status status; //판매 상태
+    private Status status; //판매 상태
 
     //찜 개수
     @Column(name = "favorite_cnt", nullable = false)
-    public int favoriteCnt;
+    private int favoriteCnt;
 
     // 게시글 1 ↔ 채팅방 N
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<ChatRoom> chatRooms = new ArrayList<>();
+    private List<ChatRoom> chatRooms = new ArrayList<>();
 
     // 게시글 1 ↔ 거래 1
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    public Trade trade;
+    private Trade trade;
 
     // 게시글 1 ↔ 첨부파일 N
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<Files> postFiles = new ArrayList<>();
+    private List<Files> postFiles = new ArrayList<>();
 
     // 게시글 1 ↔ 찜 N
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<FavoritePost> favoritePosts = new ArrayList<>();
+    private List<FavoritePost> favoritePosts = new ArrayList<>();
 
     //초기 시간 생성 및 수정, 찜 개수 초기화
     @PrePersist

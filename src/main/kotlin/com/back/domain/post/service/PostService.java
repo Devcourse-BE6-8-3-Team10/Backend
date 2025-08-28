@@ -46,7 +46,7 @@ public class PostService {
                 .build();
 
         Post saved = postRepository.save(post);
-        return new PostDetailDTO(saved, false);
+        return PostDetailDTO.Companion.of(saved, false);
     }
 
     //게시글 수정
@@ -66,7 +66,7 @@ public class PostService {
 
         // 수정 값 적용
         post.updatePost(dto.getTitle(), dto.getDescription(), category, dto.getPrice());
-        return new PostDetailDTO(post, favoritePostRepository.existsByMemberAndPost(member, post));
+        return PostDetailDTO.Companion.of(post, favoritePostRepository.existsByMemberAndPost(member, post));
     }
 
     // 게시글 삭제
@@ -104,7 +104,7 @@ public class PostService {
         Post post = getPostOrThrow(postId);
 
         boolean isLiked = favoritePostRepository.existsByMemberAndPost(member, post);
-        return new RsData<>(ResultCode.SUCCESS, "게시글 조회 성공", new PostDetailDTO(post, isLiked));
+        return new RsData<>(ResultCode.SUCCESS, "게시글 조회 성공", PostDetailDTO.Companion.of(post, isLiked));
     }
 
     //인기 게시글 조회
