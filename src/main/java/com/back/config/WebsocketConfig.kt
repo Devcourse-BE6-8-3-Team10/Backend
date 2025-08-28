@@ -12,7 +12,7 @@ import org.springframework.messaging.support.MessageHeaderAccessor
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
-import sun.print.DialogOwnerAccessor.accessor
+
 import java.security.Principal
 
 @Configuration
