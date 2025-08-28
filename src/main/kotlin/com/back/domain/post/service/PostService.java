@@ -33,14 +33,14 @@ public class PostService {
         Member member = getCurrentMemberOrThrow();
 
         // 카테고리 변환 예외 처리
-        Post.Category category = Post.Category.from(dto.category())
+        Post.Category category = Post.Category.from(dto.category)
                 .orElseThrow(() -> new ServiceException("400", "유효하지 않은 카테고리입니다."));
 
         Post post = Post.builder()
-                .title(dto.title())
-                .description(dto.description())
+                .title(dto.title)
+                .description(dto.description)
                 .category(category)
-                .price(dto.price())
+                .price(dto.price)
                 .member(member)
                 .status(Post.Status.SALE)
                 .build();
@@ -61,11 +61,11 @@ public class PostService {
         }
 
         // 카테고리 예외처리
-        Post.Category category = Post.Category.from(dto.category())
+        Post.Category category = Post.Category.from(dto.category)
                 .orElseThrow(() -> new ServiceException("400", "유효하지 않은 카테고리입니다."));
 
         // 수정 값 적용
-        post.updatePost(dto.title(), dto.description(), category, dto.price());
+        post.updatePost(dto.title, dto.description, category, dto.price);
         return new PostDetailDTO(post, favoritePostRepository.existsByMemberAndPost(member, post));
     }
 
