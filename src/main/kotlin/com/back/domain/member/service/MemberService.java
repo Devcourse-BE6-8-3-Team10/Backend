@@ -76,26 +76,21 @@ public class MemberService {
                 .orElseThrow(() -> new ServiceException(ResultCode.MEMBER_NOT_FOUND.code(), "회원 정보가 존재하지 않습니다."));
 
         // 2. 이름 변경
-        if (request.name() != null && !request.name().isBlank()) {
-            foundMember.updateName(request.name());
+        if (request.getName() != null && !request.getName().isBlank()) {
+            foundMember.updateName(request.getName());
         }
 
-//        // 3. 프로필 URL 변경
-//        if (request.profileUrl() != null && !request.profileUrl().isBlank()) {
-//            foundMember.updateProfileUrl(request.profileUrl());
-//        }
-
-        // 4. 비밀번호 변경 요청이 있을 경우만 현재 비밀번호 확인
-        if (request.newPassword() != null && !request.newPassword().isBlank()) {
-            if (request.currentPassword() == null || request.currentPassword().isBlank()) {
+        // 3. 비밀번호 변경 요청이 있을 경우만 현재 비밀번호 확인
+        if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
+            if (request.getCurrentPassword() == null || request.getCurrentPassword().isBlank()) {
                 throw new ServiceException(ResultCode.BAD_REQUEST.code(), "현재 비밀번호를 입력해주세요.");
             }
 
-            if (!passwordEncoder.matches(request.currentPassword(), foundMember.getPassword())) {
+            if (!passwordEncoder.matches(request.getCurrentPassword(), foundMember.getPassword())) {
                 throw new ServiceException(ResultCode.INVALID_PASSWORD.code(), "현재 비밀번호가 일치하지 않습니다.");
             }
 
-            foundMember.updatePassword(passwordEncoder.encode(request.newPassword()));
+            foundMember.updatePassword(passwordEncoder.encode(request.getNewPassword()));
         }
         memberRepository.save(foundMember);
     }
