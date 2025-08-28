@@ -5,11 +5,9 @@ import com.back.domain.post.entity.Post;
 import com.back.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
 @NoArgsConstructor
 @Builder
 public class Trade extends BaseEntity {
@@ -39,5 +37,25 @@ public class Trade extends BaseEntity {
         this.buyer = buyer;
         this.price = price;
         this.status = status;
+    }
+
+    public Post getPost() {
+        return post;
+    }
+
+    public Member getSeller() {
+        return seller;
+    }
+
+    public Member getBuyer() {
+        return buyer;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public TradeStatus getStatus() {
+        return status;
     }
 }
