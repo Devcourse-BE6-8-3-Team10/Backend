@@ -81,7 +81,7 @@ class AdmTradeControllerTest {
 
         // 5. expected 목록을 id 기준으로 매핑
         Map<Long, TradeDto> expectedMap = trades.stream()
-                .collect(Collectors.toMap(TradeDto::id, Function.identity()));
+                .collect(Collectors.toMap(TradeDto::getId, Function.identity()));
 
         // 6. 응답 JSON 각각을 비교
         for (JsonNode actual : contentArray) {
@@ -89,11 +89,11 @@ class AdmTradeControllerTest {
             TradeDto expected = expectedMap.get(id);
 
             assertThat(expected).as("id=" + id + "인 거래가 실제 기대값에 없음").isNotNull();
-            assertThat(actual.get("postId").asLong()).isEqualTo(expected.postId());
-            assertThat(actual.get("sellerId").asLong()).isEqualTo(expected.sellerId());
-            assertThat(actual.get("buyerId").asLong()).isEqualTo(expected.buyerId());
-            assertThat(actual.get("price").asInt()).isEqualTo(expected.price());
-            assertThat(actual.get("status").asText()).isEqualTo(expected.status());
+            assertThat(actual.get("postId").asLong()).isEqualTo(expected.getPostId());
+            assertThat(actual.get("sellerId").asLong()).isEqualTo(expected.getSellerId());
+            assertThat(actual.get("buyerId").asLong()).isEqualTo(expected.getBuyerId());
+            assertThat(actual.get("price").asInt()).isEqualTo(expected.getPrice());
+            assertThat(actual.get("status").asText()).isEqualTo(expected.getStatus().name());
             assertThat(actual.get("createdAt").asText()).isNotBlank();
         }
     }

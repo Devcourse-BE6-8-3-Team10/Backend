@@ -24,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.security.Principal;
 import java.util.Arrays;
@@ -72,14 +73,19 @@ class ChatServiceTest {
 
     @BeforeEach
     void setUp() {
+        // 그 BUILDER는 상속받은 필드는 생성할수 없음 그래서 따로 주입을 해줘야하는데 만약에 바로빌더 설정할거면 그 superbuilder 설정해줘야됨 엔티티가서
+
         // 테스트 사용자 생성
         testUser = Member.builder()
+
                 .email("test@test.com")
                 .password("password")
                 .name("테스트유저")
                 .role(Role.USER)
                 .status(Status.ACTIVE)
                 .build();
+
+        ReflectionTestUtils.setField(testUser, "id", 1L);
 
         // 게시글 작성자 생성
         postAuthor = Member.builder()
@@ -89,6 +95,8 @@ class ChatServiceTest {
                 .role(Role.USER)
                 .status(Status.ACTIVE)
                 .build();
+
+        ReflectionTestUtils.setField(postAuthor, "id", 1L);
 
         // 테스트 게시글 생성
         testPost = Post.builder()
@@ -100,9 +108,12 @@ class ChatServiceTest {
                 .status(Post.Status.SALE)
                 .build();
 
+        ReflectionTestUtils.setField(testPost, "id", 1L);
+
         // 테스트 채팅방 생성
         testChatRoom = new ChatRoom(testPost, testUser);
 
+        ReflectionTestUtils.setField(testChatRoom, "id", 1L);
         // 테스트 메시지 생성
         testMessage = new Message(testUser, "테스트 메시지");
         testMessage.setChatRoom(testChatRoom);
@@ -267,6 +278,8 @@ class ChatServiceTest {
         @DisplayName("내 채팅방 목록 조회 성공")
         void getMyChatRooms_Success() {
             // Given
+
+
             given(principal.getName()).willReturn("test@test.com");
             given(memberRepository.findByEmail("test@test.com")).willReturn(Optional.of(testUser));
 
@@ -276,13 +289,14 @@ class ChatServiceTest {
             given(messageRepository.findFirstByChatRoomIdOrderByCreatedAtDesc(testChatRoom.getId()))
                     .willReturn(testMessage);
 
+
             // When
             List<ChatRoomDto> result = chatService.getMyChatRooms(principal);
 
             // Then
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).name()).isEqualTo(testChatRoom.getRoomName());
-            assertThat(result.get(0).lastContent()).isEqualTo("테스트 메시지");
+            assertThat(result.get(0).getName()).isEqualTo(testChatRoom.getRoomName());
+            assertThat(result.get(0).getLastContent()).isEqualTo("테스트 메시지");
         }
 
         @Test

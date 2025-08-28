@@ -65,6 +65,50 @@ public class Post extends BaseEntity {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FavoritePost> favoritePosts = new ArrayList<>();
 
+    public Member getMember() {
+        return member;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public Integer getPrice() {
+        return price;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public int getFavoriteCnt() {
+        return favoriteCnt;
+    }
+
+    public List<ChatRoom> getChatRooms() {
+        return chatRooms;
+    }
+
+    public Trade getTrade() {
+        return trade;
+    }
+
+    public List<Files> getPostFiles() {
+        return postFiles;
+    }
+
+    public List<FavoritePost> getFavoritePosts() {
+        return favoritePosts;
+    }
+
     //초기 시간 생성 및 수정, 찜 개수 초기화
     @PrePersist
     protected void onCreate() {

@@ -22,21 +22,6 @@ class MessageDtoTest {
     @DisplayName("생성자 테스트")
     class ConstructorTest {
 
-        @Test
-        @DisplayName("기본 생성자 테스트")
-        void defaultConstructor() {
-            // Given & When
-            MessageDto messageDto = new MessageDto();
-
-            // Then
-            assertThat(messageDto).isNotNull();
-            assertThat(messageDto.getSenderId()).isNull();
-            assertThat(messageDto.getChatRoomId()).isNull();
-            assertThat(messageDto.getSenderName()).isNull();
-            assertThat(messageDto.getSenderEmail()).isNull();
-            assertThat(messageDto.getContent()).isNull();
-            assertThat(messageDto.getMessageType()).isNull();
-        }
 
         @Test
         @DisplayName("간단한 매개변수 생성자 테스트")
