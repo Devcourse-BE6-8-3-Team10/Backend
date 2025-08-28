@@ -10,7 +10,6 @@ import com.back.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
@@ -19,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Entity
-@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -66,6 +64,50 @@ public class Post extends BaseEntity {
     // 게시글 1 ↔ 찜 N
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FavoritePost> favoritePosts = new ArrayList<>();
+
+    public Member getMember() {
+        return member;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public Integer getPrice() {
+        return price;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public int getFavoriteCnt() {
+        return favoriteCnt;
+    }
+
+    public List<ChatRoom> getChatRooms() {
+        return chatRooms;
+    }
+
+    public Trade getTrade() {
+        return trade;
+    }
+
+    public List<Files> getPostFiles() {
+        return postFiles;
+    }
+
+    public List<FavoritePost> getFavoritePosts() {
+        return favoritePosts;
+    }
 
     //초기 시간 생성 및 수정, 찜 개수 초기화
     @PrePersist
