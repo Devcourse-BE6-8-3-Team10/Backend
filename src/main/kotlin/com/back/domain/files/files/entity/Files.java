@@ -28,7 +28,7 @@ public class Files extends BaseEntity {
     private long fileSize;
 
     @Column(nullable = false)
-    private String fileUrl;
+    public String fileUrl;
 
     // 정렬 순서
     @Column(nullable = false)

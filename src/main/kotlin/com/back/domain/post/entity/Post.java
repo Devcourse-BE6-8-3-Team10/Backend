@@ -28,44 +28,44 @@ public class Post extends BaseEntity {
     // Member ID(외래키)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    public Member member;
 
     @Column(nullable = false)
-    private String title; //제목
+    public String title; //제목
 
     @Column(columnDefinition = "TEXT",nullable = false)
-    private String description; //게시글 내용
+    public String description; //게시글 내용
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Category category; //특허 종류
+    public Category category; //특허 종류
 
     @Column(nullable = false)
-    private Integer price; //특허 가격
+    public Integer price; //특허 가격
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status; //판매 상태
+    public Status status; //판매 상태
 
     //찜 개수
     @Column(name = "favorite_cnt", nullable = false)
-    private int favoriteCnt;
+    public int favoriteCnt;
 
     // 게시글 1 ↔ 채팅방 N
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChatRoom> chatRooms = new ArrayList<>();
+    public List<ChatRoom> chatRooms = new ArrayList<>();
 
     // 게시글 1 ↔ 거래 1
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Trade trade;
+    public Trade trade;
 
     // 게시글 1 ↔ 첨부파일 N
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Files> postFiles = new ArrayList<>();
+    public List<Files> postFiles = new ArrayList<>();
 
     // 게시글 1 ↔ 찜 N
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FavoritePost> favoritePosts = new ArrayList<>();
+    public List<FavoritePost> favoritePosts = new ArrayList<>();
 
     //초기 시간 생성 및 수정, 찜 개수 초기화
     @PrePersist

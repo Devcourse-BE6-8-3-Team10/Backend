@@ -24,7 +24,7 @@ public class Member extends BaseEntity {
     private String password;
 
     @Column(nullable = false)
-    private String name;
+    public String name;
 
     @Column(nullable = true)
     private String profileUrl;
