@@ -14,7 +14,8 @@ data class TradeDto(
     val status: TradeStatus,
     @field:JsonFormat(
         shape = JsonFormat.Shape.STRING,
-        pattern = "yyyy-MM-dd HH:mm:ss"
+        pattern = "yyyy-MM-dd HH:mm:ss",
+        timezone = "Asia/Seoul"
     ) val createdAt: LocalDateTime
 ) {
     constructor(trade: Trade) : this(
