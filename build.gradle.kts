@@ -72,18 +72,6 @@ dependencyManagement {
     }
 }
 
-// 점진적 마이그레이션을 위해 소스 디렉토리에 kotlin, java 둘 다 포함
-sourceSets {
-    named("main") {
-        kotlin.srcDirs("src/main/kotlin", "src/main/java")
-        java.srcDirs("src/main/java")
-    }
-    named("test") {
-        kotlin.srcDirs("src/test/kotlin", "src/test/java")
-        java.srcDirs("src/test/java")
-    }
-}
-
 tasks.withType<Test> {
     useJUnitPlatform()
 }
