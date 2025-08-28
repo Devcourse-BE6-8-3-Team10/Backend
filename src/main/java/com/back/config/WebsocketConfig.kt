@@ -12,6 +12,7 @@ import org.springframework.messaging.support.MessageHeaderAccessor
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
+import sun.print.DialogOwnerAccessor.accessor
 import java.security.Principal
 
 @Configuration
@@ -34,6 +35,7 @@ class WebsocketConfig : WebSocketMessageBrokerConfigurer {
         registration.interceptors(object : ChannelInterceptor {
             override fun preSend(message: Message<*>, channel: MessageChannel): Message<*> {
                 val accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor::class.java)
+                    ?: return message
 
                 // 지금 말고 나중에 이거 추가하셈 뭔가 지금하면 연결 안될거같음
 //                val auth = SecurityContextHolder.getContext().authentication
@@ -41,7 +43,7 @@ class WebsocketConfig : WebSocketMessageBrokerConfigurer {
 //                    accessor.user = auth
 //                }
 
-                if (accessor?.command == StompCommand.CONNECT) {
+                if (accessor.command == StompCommand.CONNECT) {
                     accessor.getFirstNativeHeader("user-email")?.let { userEmail ->
                         accessor.user = StompPrincipal(userEmail)
                         println("WebSocket 사용자 설정: $userEmail")
