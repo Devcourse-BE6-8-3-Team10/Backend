@@ -7,12 +7,10 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseEntity {
@@ -51,6 +49,39 @@ public class Member extends BaseEntity {
         this.profileUrl = profileUrl;
         this.role = (role != null) ? role : Role.USER;  // 기본 역할은 USER
         this.status = (status != null) ? status : Status.ACTIVE;   // 기본 상태는 ACTIVE
+    }
+
+    // Getter 메서드들
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getProfileUrl() {
+        return profileUrl;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
     }
 
     // 리프레시 토큰을 삭제(무효화)함
