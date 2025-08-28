@@ -170,7 +170,7 @@ public class MemberService {
     // 회원 확인 (비밀번호 찾기용)
     public void verifyMember(FindPasswordRequest request) {
         // 이름과 이메일로 회원 존재 여부만 확인 (더 빠른 쿼리)
-        boolean exists = memberRepository.existsByNameAndEmail(request.name(), request.email());
+        boolean exists = memberRepository.existsByNameAndEmail(request.getName(), request.getEmail());
         if (!exists) {
             throw new ServiceException(ResultCode.MEMBER_NOT_FOUND.code(), "해당 정보와 일치하는 회원이 없습니다.");
         }
@@ -180,22 +180,22 @@ public class MemberService {
     @Transactional
     public void findAndUpdatePassword(FindPasswordRequest request) {
         // 1. 이름과 이메일로 회원 찾기
-        Member member = memberRepository.findByNameAndEmail(request.name(), request.email())
+        Member member = memberRepository.findByNameAndEmail(request.getName(), request.getEmail())
                 .orElseThrow(() -> new ServiceException(ResultCode.MEMBER_NOT_FOUND.code(), "해당 정보와 일치하는 회원이 없습니다."));
 
         // 2. 새 비밀번호와 확인 비밀번호가 제공되었는지 확인
-        if (request.newPassword() == null || request.newPassword().isBlank() || 
-            request.confirmPassword() == null || request.confirmPassword().isBlank()) {
+        if (request.getNewPassword() == null || request.getNewPassword().isBlank() ||
+            request.getConfirmPassword() == null || request.getConfirmPassword().isBlank()) {
             throw new ServiceException(ResultCode.BAD_REQUEST.code(), "새 비밀번호와 확인 비밀번호를 모두 입력해주세요.");
         }
 
         // 3. 새 비밀번호와 확인 비밀번호 일치 여부 확인
-        if (!request.newPassword().equals(request.confirmPassword())) {
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new ServiceException(ResultCode.BAD_REQUEST.code(), "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
         }
 
         // 4. 새 비밀번호로 업데이트
-        member.updatePassword(passwordEncoder.encode(request.newPassword()));
+        member.updatePassword(passwordEncoder.encode(request.getNewPassword()));
         memberRepository.save(member);
     }
     
