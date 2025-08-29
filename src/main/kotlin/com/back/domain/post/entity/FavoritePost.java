@@ -9,7 +9,7 @@ import lombok.*;
 @Table(
         uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "post_id"})
 )
-@Getter
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -24,5 +24,14 @@ public class FavoritePost extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
+
+    public Post getPost() {
+        return post;
+    }
+
+    public Member getMember() {
+        return member;
+    }
+
 
 }

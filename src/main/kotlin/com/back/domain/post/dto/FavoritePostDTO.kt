@@ -7,22 +7,27 @@ import java.time.LocalDateTime
 @JvmRecord
 data class FavoritePostDTO(
     val postId: Long,
-    val title: String?,
+    val title: String,
     val price: Int,
     val favoriteCnt: Int,
-    val status: String?,
+    val status: String,
     val isLiked: Boolean,
-    val createdAt: LocalDateTime?
+    val createdAt: LocalDateTime
 ) {
-    constructor(favoritePost: FavoritePost, isLiked: Boolean) : this(
-        favoritePost.getPost().getId(),
-        favoritePost.getPost().getTitle(),
-        favoritePost.getPost().getPrice(),
-        favoritePost.getPost().getFavoriteCnt(),
-        favoritePost.getPost().getStatus().getLabel(),
-        isLiked,
-        favoritePost.getPost().getCreatedAt()
-    )
+    companion object {
+        // 엔티티 객체로부터 DTO를 생성하는 팩토리 메서드
+        @JvmStatic
+        fun from(favoritePost: FavoritePost, isLiked: Boolean): FavoritePostDTO {
+            val post = favoritePost.post
+            return FavoritePostDTO(
+                postId = post.id,
+                title = post.title,
+                price = post.price,
+                favoriteCnt = post.favoriteCnt,
+                status = post.status.label,
+                isLiked = isLiked,
+                createdAt = post.createdAt
+            )
+        }
+    }
 }
-
-
