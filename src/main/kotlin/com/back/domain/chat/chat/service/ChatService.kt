@@ -1,9 +1,10 @@
 package com.back.domain.chat.chat.service
 
+import com.back.domain.chat.chat.entity.Message
 import com.back.domain.chat.chat.dto.ChatRoomDto
 import com.back.domain.chat.chat.dto.MessageDto
 import com.back.domain.chat.chat.entity.ChatRoom
-import com.back.domain.chat.chat.entity.Message
+
 import com.back.domain.chat.chat.entity.RoomParticipant
 import com.back.domain.chat.chat.repository.ChatRoomRepository
 import com.back.domain.chat.chat.repository.MessageRepository
@@ -41,7 +42,7 @@ class ChatService(
             .orElseThrow { ServiceException("404-4", "존재하지 않는 채팅방입니다.") }
 
         val message = Message(chatMessage, sender).apply {
-            setChatRoom(chatRoom)
+            updateChatRoom(chatRoom)
         }
 
         return messageRepository.save(message)
@@ -72,10 +73,10 @@ class ChatService(
             .sortedBy { it.getCreatedAt() }
             .map { message ->
                 MessageDto(
-                    message.getSender().getName(),
-                    message.getContent(),
-                    message.getSender().getId(),
-                    message.getChatRoom().getId()
+                    message.member?.name ?: "알수없음",
+                    message.content,
+                    message.member?.id ?: 0L,
+                    message.chatRoom?.id ?: 0L
                 )
             }
     }
@@ -169,7 +170,7 @@ class ChatService(
             val chatRoom = participation.getChatRoom()
             // 마지막 메시지 조회
             val lastMessage = messageRepository.findFirstByChatRoomIdOrderByCreatedAtDesc(chatRoom.getId())
-            val lastContent = lastMessage?.getContent() ?: "대화를 시작해보세요."
+            val lastContent = lastMessage?.content ?: "대화를 시작해보세요."
 
             //이거 에케처리함?
             ChatRoomDto(

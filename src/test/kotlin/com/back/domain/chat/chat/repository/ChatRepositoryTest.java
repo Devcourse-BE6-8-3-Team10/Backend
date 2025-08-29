@@ -18,7 +18,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -147,12 +146,16 @@ class ChatRepositoryTest {
         @DisplayName("채팅방 ID로 메시지 목록 조회")
         void findByChatRoomId() {
             // Given
-            Message message1 = new Message(testUser, "첫번째 메시지");
-            message1.setChatRoom(testChatRoom);
+            Message message1 = new Message();
+            message1.updateMember(testUser);
+            message1.updateContent("첫번째 메시지");
+            message1.updateChatRoom(testChatRoom);
             messageRepository.save(message1);
 
-            Message message2 = new Message(postAuthor, "두번째 메시지");
-            message2.setChatRoom(testChatRoom);
+            Message message2 = new Message();
+            message2.updateMember(testUser);
+            message2.updateContent("두번째 메시지");
+            message2.updateChatRoom(testChatRoom);
             messageRepository.save(message2);
 
             // When
@@ -170,14 +173,19 @@ class ChatRepositoryTest {
         @DisplayName("채팅방의 마지막 메시지 조회")
         void findFirstByChatRoomIdOrderByCreatedAtDesc() {
             // Given
-            Message firstMessage = new Message(testUser, "첫번째 메시지");
-            firstMessage.setChatRoom(testChatRoom);
+            Message firstMessage = new Message();
+            firstMessage.updateMember(testUser);
+            firstMessage.updateContent("첫번째 메시지");
+            firstMessage.updateChatRoom(testChatRoom);
+
             messageRepository.save(firstMessage);
 
             entityManager.flush();
 
-            Message lastMessage = new Message(postAuthor, "마지막 메시지");
-            lastMessage.setChatRoom(testChatRoom);
+            Message lastMessage = new Message();
+            lastMessage.updateMember(testUser);
+            lastMessage.updateContent("마지막 메시지");
+            lastMessage.updateChatRoom(testChatRoom);
             messageRepository.save(lastMessage);
 
             // When
