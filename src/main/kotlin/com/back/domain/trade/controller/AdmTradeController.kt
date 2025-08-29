@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/trades")
 @PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "AdmTradeController", description = "관리자용 거래 API 컨트롤러")
+@Validated
 class AdmTradeController (
     private val tradeService: TradeService
 ) {
