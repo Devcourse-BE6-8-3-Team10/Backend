@@ -4,9 +4,7 @@ import com.back.domain.post.entity.Post
 import java.time.LocalDateTime
 
 //게시글 상세 조회 응답용
-@JvmRecord
 data class PostDetailDTO(
-    @JvmField
     val id: Long,
     val writerName: String,
     val title: String,
@@ -20,6 +18,7 @@ data class PostDetailDTO(
     val modifiedAt: LocalDateTime
 ) {
     companion object {
+        @JvmStatic
         fun of(post: Post, isLiked: Boolean): PostDetailDTO {
             return PostDetailDTO(
                 id = post.id,
