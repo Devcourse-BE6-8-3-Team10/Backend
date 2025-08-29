@@ -26,7 +26,7 @@ public class PostController {
     @PostMapping
     public ResponseEntity<PostDetailDTO> createPost(@Valid @RequestBody PostRequestDTO dto) {
         PostDetailDTO result = postService.createPost(dto);
-        URI location = URI.create("/api/posts/" + result.id());
+        URI location = URI.create("/api/posts/" + result.getId());
         return ResponseEntity.created(location).body(result);
     }
 

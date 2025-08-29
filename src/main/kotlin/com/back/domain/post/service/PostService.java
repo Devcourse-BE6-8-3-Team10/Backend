@@ -33,20 +33,20 @@ public class PostService {
         Member member = getCurrentMemberOrThrow();
 
         // 카테고리 변환 예외 처리
-        Post.Category category = Post.Category.from(dto.category())
+        Post.Category category = Post.Category.from(dto.getCategory())
                 .orElseThrow(() -> new ServiceException("400", "유효하지 않은 카테고리입니다."));
 
         Post post = Post.builder()
-                .title(dto.title())
-                .description(dto.description())
+                .title(dto.getTitle())
+                .description(dto.getDescription())
                 .category(category)
-                .price(dto.price())
+                .price(dto.getPrice())
                 .member(member)
                 .status(Post.Status.SALE)
                 .build();
 
         Post saved = postRepository.save(post);
-        return new PostDetailDTO(saved, false);
+        return PostDetailDTO.Companion.of(saved, false);
     }
 
     //게시글 수정
@@ -61,12 +61,12 @@ public class PostService {
         }
 
         // 카테고리 예외처리
-        Post.Category category = Post.Category.from(dto.category())
+        Post.Category category = Post.Category.from(dto.getCategory())
                 .orElseThrow(() -> new ServiceException("400", "유효하지 않은 카테고리입니다."));
 
         // 수정 값 적용
-        post.updatePost(dto.title(), dto.description(), category, dto.price());
-        return new PostDetailDTO(post, favoritePostRepository.existsByMemberAndPost(member, post));
+        post.updatePost(dto.getTitle(), dto.getDescription(), category, dto.getPrice());
+        return PostDetailDTO.Companion.of(post, favoritePostRepository.existsByMemberAndPost(member, post));
     }
 
     // 게시글 삭제
@@ -93,7 +93,7 @@ public class PostService {
     public List<PostListDTO> getPostList() {
         return postRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
-                .map(PostListDTO::new)
+                .map(PostListDTO::from)
                 .toList();
     }
 
@@ -104,7 +104,7 @@ public class PostService {
         Post post = getPostOrThrow(postId);
 
         boolean isLiked = favoritePostRepository.existsByMemberAndPost(member, post);
-        return new RsData<>(ResultCode.SUCCESS, "게시글 조회 성공", new PostDetailDTO(post, isLiked));
+        return new RsData<>(ResultCode.SUCCESS, "게시글 조회 성공", PostDetailDTO.Companion.of(post, isLiked));
     }
 
     //인기 게시글 조회
@@ -112,7 +112,7 @@ public class PostService {
     public List<PostListDTO> getTop10PopularPosts() {
         return postRepository.findTop10ByOrderByFavoriteCntDesc()
                 .stream()
-                .map(PostListDTO::new)
+                .map(PostListDTO::from)
                 .toList();
     }
 
@@ -160,7 +160,7 @@ public class PostService {
         List<FavoritePost> favoritePosts = favoritePostRepository.findByMemberOrderByPostCreatedAtDesc(member);
         return favoritePosts.stream()
                 .map(FavoritePost::getPost)
-                .map(PostListDTO::new)
+                .map(PostListDTO::from)
                 .toList();
     }
 
@@ -170,7 +170,7 @@ public class PostService {
         Member member = getCurrentMemberOrThrow();
         return postRepository.findByMember(member)
                 .stream()
-                .map(PostListDTO::new)
+                .map(PostListDTO::from)
                 .toList();
     }
 
