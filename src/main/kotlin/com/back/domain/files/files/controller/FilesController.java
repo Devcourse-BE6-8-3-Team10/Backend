@@ -30,17 +30,6 @@ public class FilesController {
             @Parameter(description = "업로드할 파일들", required = false)
             @RequestPart(value = "files", required = false) MultipartFile[] files
     ) {
-        // ================== 디버깅 코드 추가 ==================
-        if (files != null && files.length > 0 && files[0] != null) {
-            System.out.println("======================================================");
-            System.out.println("### 컨트롤러에서 직접 파일 상태 확인 ###");
-            System.out.println("파일명: " + files[0].getOriginalFilename());
-            System.out.println("파일 사이즈: " + files[0].getSize());
-            System.out.println("isEmpty() 결과: " + files[0].isEmpty());
-            System.out.println("======================================================");
-        }
-        // =====================================================
-
         // 서비스 호출 결과(즉각적인 응답)를 그대로 반환
         return filesService.uploadFiles(postId, files);
     }
