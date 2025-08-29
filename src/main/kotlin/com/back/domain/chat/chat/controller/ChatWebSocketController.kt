@@ -21,11 +21,8 @@ class ChatWebSocketController(
     @MessageMapping("/sendMessage")
     fun sendMessage(chatMessage: MessageDto) {
         log.info("=== WebSocket 메시지 수신 ===")
-        log.info("sender: {}", chatMessage.senderName)
-        log.info("senderEmail: {}", chatMessage.senderEmail)
-        log.info("content: {}", chatMessage.content)
-        log.info("senderId: {}", chatMessage.senderId)
-        log.info("chatRoomId: {}", chatMessage.chatRoomId)
+        log.debug("sender: {}", chatMessage.senderName)
+        log.debug("chatRoomId: {}", chatMessage.chatRoomId)
         log.info("=================")
 
         try {

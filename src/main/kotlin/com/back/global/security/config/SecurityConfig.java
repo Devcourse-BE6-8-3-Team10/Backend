@@ -55,13 +55,13 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-resources/**").permitAll()
                         .requestMatchers("/webjars/**").permitAll()
 
-                        // WebSocket 관련 경로들
-                        .requestMatchers("/chat/**").permitAll()     // WebSocket 엔드포인트 허용
-                        .requestMatchers("/chat").permitAll()        // WebSocket 핸드셰이크 경로
-                        .requestMatchers("/topic/**").permitAll()    // STOMP 구독 경로 허용
-                        .requestMatchers("/queue/**").permitAll()    // 개별 사용자 큐 경로 허용
-                        .requestMatchers("/user/**").permitAll()     // 사용자별 메시지 경로 허용
-                        .requestMatchers("/app/**").permitAll()      // 메시지 전송 경로 허용
+                        // WebSocket 관련 경로들 이거 일단 바꿨는데 안되면 다시 PERMIttall
+                        .requestMatchers("/chat/**").authenticated()     // WebSocket 엔드포인트 허용
+                        .requestMatchers("/chat").authenticated()        // WebSocket 핸드셰이크 경로
+                        .requestMatchers("/topic/**").authenticated()    // STOMP 구독 경로 허용
+                        .requestMatchers("/queue/**").authenticated()    // 개별 사용자 큐 경로 허용
+                        .requestMatchers("/user/**").authenticated()     // 사용자별 메시지 경로 허용
+                        .requestMatchers("/app/**").authenticated()      // 메시지 전송 경로 허용
                         // 채팅 REST API는 인증 필요로 변경
                         // CORS 설정이 필요한 경우, CORS 필터를 추가해야 합니다.
 
@@ -88,7 +88,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
+
         // 허용할 오리진 설정 (개발 환경)
         configuration.setAllowedOrigins(List.of(
             "http://localhost:3000",
@@ -97,25 +97,25 @@ public class SecurityConfig {
             "https://frontend-devteam-10.vercel.app",
             "https://www.devteam10.org"
         ));
-        
+
         // 허용할 HTTP 메서드 설정 (PATCH 추가)
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        
+
         // 허용할 헤더 설정
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        
+
         // 인증 정보 포함 허용
         configuration.setAllowCredentials(true);
-        
+
         // 노출할 헤더 설정
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
-        
+
         // 프리플라이트 요청 캐시 시간 설정 (1시간)
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-        
+
         return source;
     }
 
