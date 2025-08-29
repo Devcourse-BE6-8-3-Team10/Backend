@@ -15,11 +15,13 @@ import jakarta.validation.constraints.Positive
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/trades")
 @Tag(name = "TradeController", description = "거래 API 컨트롤러")
+@Validated
 class TradeController (
     private val tradeService: TradeService,
     private val rq: Rq
