@@ -31,7 +31,7 @@ class FilesService(
         val post = postRepository.findById(postId)
             .orElseThrow { IllegalArgumentException("존재하지 않는 게시글입니다: $postId") }
 
-        if (rq.getMember() == null || rq.getMember()!!.getId() != post.getMember().getId()) {
+        if (!rq.isLogin() || rq.getMemberId() != post.getMember().getId()) {
             throw IllegalArgumentException("게시글 작성자만 파일을 업로드할 수 있습니다.")
         }
 
@@ -143,7 +143,7 @@ class FilesService(
 
     fun adminDeleteFile(fileId: Long): RsData<Void?> {
         if (!rq.isAdmin()) {
-            throw IllegalArgumentException("관리자 권한이 필요합니다.")
+            return RsData("403-3", "관리자 권한이 필요합니다.", null)
         }
 
         val file = filesRepository.findById(fileId)
@@ -160,8 +160,7 @@ class FilesService(
         try {
             fileStorageService.deletePhysicalFile(fileUrl)
         } catch (e: Exception) {
-            log.error("물리 파일 삭제 중 오류 발생: $fileUrl", e)
-            throw RuntimeException("파일 삭제 중 오류가 발생했습니다. 다시 시도해주세요.")
+            log.error("물리 파일 삭제 중 오류 발생 (논리 삭제는 계속 진행): $fileUrl", e)
         }
     }
 }
