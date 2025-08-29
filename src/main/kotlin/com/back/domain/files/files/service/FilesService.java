@@ -39,7 +39,7 @@ public class FilesService {
         }
 
         // 비동기 파일 업로드 메서드 호출
-        asyncFileService.uploadFilesAsync(post, files);
+        asyncFileService.uploadFilesAsync(post.getId(), files);
 
         // 파일 처리 시작을 알리는 즉각적인 응답
         return new RsData<>(

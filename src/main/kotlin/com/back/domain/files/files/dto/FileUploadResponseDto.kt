@@ -19,14 +19,14 @@ data class FileUploadResponseDto(
         @JvmStatic
         fun from(file: Files): FileUploadResponseDto {
             return FileUploadResponseDto(
-                id = file.getId(),
-                postId = file.getPost().getId(), // Post 엔티티에 접근
-                fileName = file.getFileName(),
-                fileType = file.getFileType(),
-                fileSize = file.getFileSize(),
-                fileUrl = file.getFileUrl(),
-                sortOrder = file.getSortOrder(),
-                createdAt = file.getCreatedAt()
+                id = file.id,
+                postId = file.post.id, // Post 엔티티에 접근
+                fileName = file.fileName,
+                fileType = file.fileType,
+                fileSize = file.fileSize,
+                fileUrl = file.fileUrl,
+                sortOrder = file.sortOrder,
+                createdAt = file.createdAt
             )
         }
     }
