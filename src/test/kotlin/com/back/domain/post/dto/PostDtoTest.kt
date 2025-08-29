@@ -95,7 +95,7 @@ class PostAndFavoriteDtosTest {
     fun favoritePostDTO_from() {
         val (favoritePost, post) = makeFavoritePost()
 
-        val dto = FavoritePostDTO.from(favoritePost, isLiked = true)
+        val dto = FavoritePostDTO.of(favoritePost, isLiked = true)
 
         assertThat(dto.postId).isEqualTo(1L)
         assertThat(dto.title).isEqualTo("제목")

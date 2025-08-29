@@ -17,7 +17,7 @@ data class FavoritePostDTO(
     companion object {
         // 엔티티 객체로부터 DTO를 생성하는 팩토리 메서드
         @JvmStatic
-        fun from(favoritePost: FavoritePost, isLiked: Boolean): FavoritePostDTO {
+        fun of(favoritePost: FavoritePost, isLiked: Boolean): FavoritePostDTO {
             val post = favoritePost.post
             return FavoritePostDTO(
                 postId = post.id,
