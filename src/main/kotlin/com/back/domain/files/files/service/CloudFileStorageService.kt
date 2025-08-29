@@ -17,8 +17,6 @@ import java.util.*
 @Service
 @Profile("prod") // 프로덕션 환경에서만 이 서비스가 활성화되도록 설정
 class CloudFileStorageService(
-    // Google Cloud Storage 클라이언트 객체
-    // 생성자를 통한 Storage 객체 주입 (Spring이 자동으로 StorageOptions.getDefaultInstance().getService()를 통해 생성)
     private val gcsStorage: Storage
 ) : FileStorageService {
 
@@ -26,12 +24,11 @@ class CloudFileStorageService(
         private val log = LoggerFactory.getLogger(CloudFileStorageService::class.java)
     }
 
-    // 클라우드 스토리지 버킷 이름 설정 (application.yml에서 주입)
     @Value("\${GCP_BUCKET_NAME}")
     private lateinit var bucketName: String
 
     @Value("\${file.upload.max-size:10485760}")
-    private var maxFileSize: Long = 0 // 최대 파일 크기 (기본값: 10MB)
+    private var maxFileSize: Long = 0
 
     override fun storeFile(fileContent: ByteArray, originalFilename: String, contentType: String, subFolder: String): String {
         if (fileContent.size > maxFileSize) {
@@ -42,9 +39,11 @@ class CloudFileStorageService(
             throw RuntimeException("허용되지 않는 파일 형식입니다.")
         }
 
+        // subFolder 정규화 - 상대경로 제거
+        val normalizedSubFolder = sanitizeSubFolder(subFolder)
+
         val fileExtension = getExtension(originalFilename)
-        // subFolder (예: "profile/{memberId}")와 UUID를 조합하여 고유한 객체 이름 생성
-        val fileNameInStorage = "$subFolder/${UUID.randomUUID()}$fileExtension"
+        val fileNameInStorage = "$normalizedSubFolder/${UUID.randomUUID()}$fileExtension"
 
         val blobId = BlobId.of(bucketName, fileNameInStorage)
         val blobInfo = BlobInfo.newBuilder(blobId)
@@ -64,15 +63,7 @@ class CloudFileStorageService(
             return
         }
 
-        val gcsUrlPrefix = "https://storage.googleapis.com/$bucketName/"
-        if (!fileUrl.startsWith(gcsUrlPrefix)) {
-            return
-        }
-
-        val objectNameToDelete = URLDecoder.decode(
-            fileUrl.substring(gcsUrlPrefix.length),
-            StandardCharsets.UTF_8
-        )
+        val objectNameToDelete = validateAndExtractObjectName(fileUrl) ?: return
 
         try {
             val deleted = gcsStorage.delete(BlobId.of(bucketName, objectNameToDelete))
@@ -85,11 +76,49 @@ class CloudFileStorageService(
     }
 
     override fun loadFileAsResource(fileUrl: String): Resource {
+        //  적절한 검증 후 공개 접근 허용
+        validateGcsUrl(fileUrl)
+
         return try {
             UrlResource(fileUrl)
         } catch (e: MalformedURLException) {
             throw RuntimeException("파일 URL 형식이 잘못되었습니다: $fileUrl", e)
         }
+    }
+
+    // ============== 헬퍼 메서드 영역 ==============
+
+    /**
+     * GCS URL 검증 - 우리 버킷의 URL인지만 확인
+     */
+    private fun validateGcsUrl(fileUrl: String) {
+        val gcsUrlPrefix = "https://storage.googleapis.com/$bucketName/"
+        if (!fileUrl.startsWith(gcsUrlPrefix)) {
+            throw RuntimeException("허용되지 않는 파일 URL입니다: $fileUrl")
+        }
+    }
+
+    /**
+     * 파일 URL에서 object name 추출 및 검증
+     */
+    private fun validateAndExtractObjectName(fileUrl: String): String? {
+        val gcsUrlPrefix = "https://storage.googleapis.com/$bucketName/"
+        if (!fileUrl.startsWith(gcsUrlPrefix)) {
+            log.warn("GCS URL이 아님: $fileUrl")
+            return null
+        }
+
+        return URLDecoder.decode(
+            fileUrl.substring(gcsUrlPrefix.length),
+            StandardCharsets.UTF_8
+        )
+    }
+
+    /**
+     * 서브폴더명 정규화 (위험한 문자 제거)
+     */
+    private fun sanitizeSubFolder(subFolder: String): String {
+        return subFolder.replace("..", "").replace("./", "").trim('/', ' ')
     }
 
     private fun getExtension(fileName: String?): String {
