@@ -66,5 +66,5 @@ class TradeService (
     //최근 거래 조회
     @Transactional(readOnly = true)
     fun findLatest(): Trade = tradeRepository.findFirstByOrderByCreatedAtDesc()
-            .orElseThrow{ NoSuchElementException("최근 거래 내역이 없습니다.") }
+        ?: throw NoSuchElementException("최근 거래 내역이 없습니다.")
 }
