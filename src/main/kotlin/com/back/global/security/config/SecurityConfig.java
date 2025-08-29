@@ -55,13 +55,13 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-resources/**").permitAll()
                         .requestMatchers("/webjars/**").permitAll()
 
-                        // WebSocket 관련 경로들 이거 일단 바꿨는데 안되면 다시 PERMIttall
-                        .requestMatchers("/chat/**").authenticated()     // WebSocket 엔드포인트 허용
-                        .requestMatchers("/chat").authenticated()        // WebSocket 핸드셰이크 경로
-                        .requestMatchers("/topic/**").authenticated()    // STOMP 구독 경로 허용
-                        .requestMatchers("/queue/**").authenticated()    // 개별 사용자 큐 경로 허용
-                        .requestMatchers("/user/**").authenticated()     // 사용자별 메시지 경로 허용
-                        .requestMatchers("/app/**").authenticated()      // 메시지 전송 경로 허용
+                        // WebSocket 관련 경로들
+                        .requestMatchers("/chat/**").permitAll()     // WebSocket 엔드포인트 허용
+                        .requestMatchers("/chat").permitAll()        // WebSocket 핸드셰이크 경로
+                        .requestMatchers("/topic/**").permitAll()    // STOMP 구독 경로 허용
+                        .requestMatchers("/queue/**").permitAll()    // 개별 사용자 큐 경로 허용
+                        .requestMatchers("/user/**").permitAll()     // 사용자별 메시지 경로 허용
+                        .requestMatchers("/app/**").permitAll()      // 메시지 전송 경로 허용
                         // 채팅 REST API는 인증 필요로 변경
                         // CORS 설정이 필요한 경우, CORS 필터를 추가해야 합니다.
 
