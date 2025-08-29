@@ -9,9 +9,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -37,30 +35,28 @@ public class CloudFileStorageService implements FileStorageService {
     private long maxFileSize; // 최대 파일 크기 (기본값: 10MB)
 
     @Override
-    public String storeFile(MultipartFile file, String subFolder) {
-        if (file.getSize() > maxFileSize) {
+    public String storeFile(byte[] fileContent, String originalFilename, String contentType, String subFolder) {
+        if (fileContent.length > maxFileSize) {
             throw new RuntimeException("파일 크기가 너무 큽니다. 최대 " + (maxFileSize / (1024 * 1024)) + "MB까지 업로드 가능합니다.");
         }
 
-        String contentType = file.getContentType();
         if (contentType == null || !isAllowedFileType(contentType)) {
             throw new RuntimeException("허용되지 않는 파일 형식입니다.");
         }
 
-        String originalFileName = file.getOriginalFilename();
-        String fileExtension = getExtension(originalFileName);
+        String fileExtension = getExtension(originalFilename);
         // subFolder (예: "profile/{memberId}")와 UUID를 조합하여 고유한 객체 이름 생성
         String fileNameInStorage = subFolder + "/" + UUID.randomUUID().toString() + fileExtension;
 
         BlobId blobId = BlobId.of(bucketName, fileNameInStorage);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
-                .setContentType(file.getContentType())
+                .setContentType(contentType)
                 .build();
 
         try {
-            gcsStorage.createFrom(blobInfo, file.getInputStream());
+            gcsStorage.create(blobInfo, fileContent);
             return String.format("https://storage.googleapis.com/%s/%s", bucketName, fileNameInStorage);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("클라우드 스토리지 파일 저장 중 오류가 발생했습니다.", e);
         }
     }

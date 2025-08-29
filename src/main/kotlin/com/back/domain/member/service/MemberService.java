@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -126,11 +128,23 @@ public class MemberService {
         }
 
         try {
+            byte[] fileContent = file.getBytes();
+            String originalFilename = file.getOriginalFilename();
+            String contentType = file.getContentType();
+
             // MemberService에서 파일을 저장할 때, 'profile/{memberId}'를 하위 폴더로 지정
-            String newProfileUrl = fileStorageService.storeFile(file, "profile/" + memberId); // 수정된 부분
+            String newProfileUrl = fileStorageService.storeFile(
+                    fileContent,
+                    originalFilename,
+                    contentType,
+                    "profile/" + memberId
+            );
             member.updateProfileUrl(newProfileUrl);
             memberRepository.save(member);
             return newProfileUrl;
+        } catch (IOException e) {
+            log.error("프로필 이미지 파일 읽기 실패: {}", file.getOriginalFilename(), e);
+            throw new ServiceException(ResultCode.SERVER_ERROR.code(), "프로필 이미지 처리 중 오류가 발생했습니다.");
         } catch (Exception e) {
             throw new ServiceException(ResultCode.FILE_UPLOAD_FAIL.code(), "프로필 이미지 업로드에 실패했습니다.");
         }

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -30,7 +32,7 @@ public class FilesService {
     private final AsyncFileService asyncFileService;
 
     // 파일 업로드 서비스 (동기 호출)
-    public RsData<String> uploadFiles(Long postId, MultipartFile[] files) { // 반환 타입을 RsData<String>으로 변경
+    public RsData<String> uploadFiles(Long postId, MultipartFile[] files) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다: " + postId));
 
@@ -38,8 +40,42 @@ public class FilesService {
             throw new IllegalArgumentException("게시글 작성자만 파일을 업로드할 수 있습니다.");
         }
 
-        // 비동기 파일 업로드 메서드 호출
-        asyncFileService.uploadFilesAsync(post.getId(), files);
+        if (files == null || files.length == 0) {
+            return new RsData<>(
+                    "200",
+                    "업로드할 파일이 없습니다.",
+                    "No files to upload"
+            );
+        }
+
+        List<AsyncFileService.FileData> fileDataList = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) {
+                continue;
+            }
+
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || originalFilename.isBlank()) {
+                continue;
+            }
+
+            String contentType = file.getContentType();
+            if (contentType == null || contentType.isBlank()) {
+                contentType = "application/octet-stream";
+            }
+
+            try {
+                byte[] content = file.getBytes();
+                fileDataList.add(new AsyncFileService.FileData(originalFilename, contentType, content));
+            } catch (IOException e) {
+                log.error("파일을 읽는 중 오류가 발생했습니다: " + originalFilename, e);
+                // Optionally, you can decide to stop the whole process if one file fails
+                // For now, we just skip the failed file
+            }
+        }
+
+        // Pass the list of byte arrays to the async service
+        asyncFileService.uploadFilesAsync(post.getId(), fileDataList);
 
         // 파일 처리 시작을 알리는 즉각적인 응답
         return new RsData<>(

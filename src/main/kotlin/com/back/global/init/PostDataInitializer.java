@@ -185,7 +185,12 @@ public class PostDataInitializer {
         for (int i = 0; i < imageCount; i++) {
             MultipartFile file = images.get(i);
             try {
-                String fileUrl = fileStorageService.storeFile(file, "post_" + post.getId());
+                String fileUrl = fileStorageService.storeFile(
+                        file.getBytes(),
+                        file.getOriginalFilename(),
+                        file.getContentType(),
+                        "post_" + post.getId()
+                );
                 Files fileEntity = Files.builder()
                         .post(post)
                         .fileName(file.getOriginalFilename())
