@@ -5,8 +5,8 @@ import java.time.LocalDateTime
 
 data class FileUploadResponseDto(
     // 파일 업로드 응답 DTO
-    val id: Long?,
-    val postId: Long?,
+    val id: Long,
+    val postId: Long,
     val fileName: String,
     val fileType: String,
     val fileSize: Long,
