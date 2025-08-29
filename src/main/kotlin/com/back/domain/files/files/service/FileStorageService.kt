@@ -1,9 +1,9 @@
-package com.back.domain.files.files.service;
+package com.back.domain.files.files.service
 
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.Resource
 
-public interface FileStorageService {
-    String storeFile(byte[] fileContent, String originalFilename, String contentType, String subFolder);
-    void deletePhysicalFile(String fileUrl);
-    Resource loadFileAsResource(String fileUrl);
+interface FileStorageService {
+    fun storeFile(fileContent: ByteArray, originalFilename: String, contentType: String, subFolder: String): String
+    fun deletePhysicalFile(fileUrl: String)
+    fun loadFileAsResource(fileUrl: String): Resource
 }

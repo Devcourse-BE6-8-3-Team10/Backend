@@ -1,68 +1,94 @@
-package com.back.domain.files.files.service;
+package com.back.domain.files.files.service
 
-import com.back.domain.files.files.entity.Files;
-import com.back.domain.files.files.repository.FilesRepository;
-import com.back.domain.post.entity.Post;
-import com.back.domain.post.repository.PostRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.back.domain.files.files.entity.Files
+import com.back.domain.files.files.repository.FilesRepository
+import com.back.domain.post.repository.PostRepository
+import org.slf4j.LoggerFactory
+import org.springframework.data.domain.PageRequest
+import org.springframework.scheduling.annotation.Async
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
-import java.util.List;
-
-@Slf4j
 @Service
-@RequiredArgsConstructor
-public class AsyncFileService {
+class AsyncFileService(
+    private val filesRepository: FilesRepository,
+    private val fileStorageService: FileStorageService,
+    private val postRepository: PostRepository
+) {
+    companion object {
+        private val log = LoggerFactory.getLogger(AsyncFileService::class.java)
+    }
 
-    // Helper DTO to safely pass file data across threads
-    public record FileData(String originalFilename, String contentType, byte[] content) {}
 
-    private final FilesRepository filesRepository;
-    private final FileStorageService fileStorageService;
-    private final PostRepository postRepository;
+    data class FileData(
+        val originalFilename: String,
+        val contentType: String,
+        val content: ByteArray
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
 
-    @Async
-    @Transactional
-    public void uploadFilesAsync(Long postId, List<FileData> fileDataList) {
-        if (fileDataList == null || fileDataList.isEmpty()) {
-            log.info("업로드할 파일 데이터가 없어 비동기 작업을 종료합니다.");
-            return;
+            other as FileData
+
+            if (originalFilename != other.originalFilename) return false
+            if (contentType != other.contentType) return false
+            if (!content.contentEquals(other.content)) return false
+
+            return true
         }
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("비동기 처리 중 게시글을 찾을 수 없습니다: " + postId));
+        override fun hashCode(): Int {
+            var result = originalFilename.hashCode()
+            result = 31 * result + contentType.hashCode()
+            result = 31 * result + content.contentHashCode()
+            return result
+        }
+    }
 
-        List<Files> lastFileResult = filesRepository.findLastByPostIdWithLock(postId, PageRequest.of(0, 1));
-        int sortOrder = lastFileResult.isEmpty() ? 1 : lastFileResult.get(0).getSortOrder() + 1;
+    // 파일 업로드 서비스 (비동기 호출)
+    @Async
+    @Transactional
+    fun uploadFilesAsync(postId: Long, fileDataList: List<FileData>) {
+        if (fileDataList.isEmpty()) {
+            log.info("업로드할 파일 데이터가 없어 비동기 작업을 종료합니다.")
+            return
+        }
 
-        log.info("비동기 파일 처리 시작. 게시글 ID: {}, 파일 개수: {}", postId, fileDataList.size());
+        val post = postRepository.findById(postId)
+            .orElseThrow { IllegalArgumentException("비동기 처리 중 게시글을 찾을 수 없습니다: $postId") }
 
-        for (FileData fileData : fileDataList) {
-            String fileUrl = null;
-            try {
+        val lastFileResult = filesRepository.findLastByPostIdWithLock(postId, PageRequest.of(0, 1))
+        var sortOrder = if (lastFileResult.isEmpty()) 1 else lastFileResult[0].getSortOrder() + 1
+
+        log.info("비동기 파일 처리 시작. 게시글 ID: {}, 파일 개수: {}", postId, fileDataList.size)
+
+        for (fileData in fileDataList) {
+            val fileUrl: String? = try {
                 // Pass byte array to storage service
-                fileUrl = fileStorageService.storeFile(fileData.content(), fileData.originalFilename(), fileData.contentType(), "post_" + post.getId());
-            } catch (RuntimeException e) {
-                log.error("물리 파일 저장 실패, 건너뜁니다: " + fileData.originalFilename(), e);
-                continue;
+                fileStorageService.storeFile(
+                    fileData.content,
+                    fileData.originalFilename,
+                    fileData.contentType,
+                    "post_${post.getId()}"
+                )
+            } catch (e: RuntimeException) {
+                log.error("물리 파일 저장 실패, 건너뜁니다: ${fileData.originalFilename}", e)
+                continue
             }
 
             // Save metadata to database
             filesRepository.save(
-                    Files.builder()
-                            .post(post)
-                            .fileName(fileData.originalFilename())
-                            .fileType(fileData.contentType())
-                            .fileSize(fileData.content().length)
-                            .fileUrl(fileUrl)
-                            .sortOrder(sortOrder++)
-                            .build()
-            );
+                Files(
+                    post,
+                    fileData.originalFilename,
+                    fileData.contentType,
+                    fileData.content.size.toLong(),
+                    fileUrl!!,
+                    sortOrder++
+                )
+            )
         }
-        log.info("게시글 ID {}에 대한 파일 업로드가 비동기적으로 완료되었습니다.", postId);
+        log.info("게시글 ID {}에 대한 파일 업로드가 비동기적으로 완료되었습니다.", postId)
     }
 }

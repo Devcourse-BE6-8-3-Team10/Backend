@@ -7,7 +7,6 @@ import lombok.*;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Builder
 @Table(name = "files")
 public class Files extends BaseEntity {
@@ -33,6 +32,7 @@ public class Files extends BaseEntity {
     @Column(nullable = false)
     private int sortOrder;
 
+    // Getter 메서드
     public Post getPost() {
         return post;
     }
@@ -55,6 +55,16 @@ public class Files extends BaseEntity {
 
     public int getSortOrder() {
         return sortOrder;
+    }
+
+
+    public Files(Post post, String fileName, String fileType, long fileSize, String fileUrl, int sortOrder) {
+        this.post = post;
+        this.fileName = fileName;
+        this.fileType = fileType;
+        this.fileSize = fileSize;
+        this.fileUrl = fileUrl;
+        this.sortOrder = sortOrder;
     }
 }
 
