@@ -130,8 +130,8 @@ class TradeControllerTest {
                 .andDo(print());
 
         resultActions
-                .andExpect(jsonPath("$.resultCode").value("400-1"))
-                .andExpect(jsonPath("$.msg").value("이미 판매된 게시글입니다."));
+                .andExpect(jsonPath("$.resultCode").value("400-3"))
+                .andExpect(jsonPath("$.msg").value("이미 판매 완료된 게시글입니다."));
     }
 
     @Test
