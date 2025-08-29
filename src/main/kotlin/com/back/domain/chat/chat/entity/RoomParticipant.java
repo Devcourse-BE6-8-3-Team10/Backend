@@ -5,13 +5,11 @@ import com.back.global.jpa.entity.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
-@Setter
 public class RoomParticipant extends BaseEntity {
     // room , user 메니투원 설정
     @ManyToOne
@@ -44,5 +42,21 @@ public class RoomParticipant extends BaseEntity {
 
     public boolean isActive() {
         return isActive;
+    }
+
+    public void setChatRoom(ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
+
+    public void setLeftAt(LocalDateTime leftAt) {
+        this.leftAt = leftAt;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 }

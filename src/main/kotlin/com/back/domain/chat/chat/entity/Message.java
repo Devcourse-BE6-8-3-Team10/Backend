@@ -5,13 +5,11 @@ import com.back.domain.member.entity.Member;
 import com.back.global.jpa.entity.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @NoArgsConstructor
-@Setter
+
 public class Message extends BaseEntity {
     //member, chatroom 관계 설정
     @ManyToOne
@@ -42,5 +40,17 @@ public class Message extends BaseEntity {
 
     public String getContent() {
         return content;
+    }
+
+    public void setChatRoom(ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
+    }
+
+    public void setSender(Member sender) {
+        this.sender = sender;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 }
