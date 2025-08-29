@@ -1,47 +1,44 @@
-package com.back.domain.files.files.controller;
+package com.back.domain.files.files.controller
 
-import com.back.domain.files.files.service.FileStorageService;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
+import com.back.domain.files.files.service.FileStorageService
+import jakarta.servlet.http.HttpServletRequest
+import org.springframework.core.io.Resource
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import java.io.IOException
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/files")
-public class FileDownloadController {
-
-    private final FileStorageService fileStorageService;
+class FileDownloadController(
+    private val fileStorageService: FileStorageService
+) {
 
     // 파일 다운로드 API
     @GetMapping("/**")
-    public ResponseEntity<Resource> downloadFile(HttpServletRequest request) {
-        String fileUrl = request.getRequestURI();
+    fun downloadFile(request: HttpServletRequest): ResponseEntity<Resource> {
+        val fileUrl = request.requestURI
         // 경로 순회 공격 방지
         if (fileUrl.contains("..") || fileUrl.contains("./") || fileUrl.contains("\\")) {
-            throw new IllegalArgumentException("Invalid file URL: " + fileUrl);
+            throw IllegalArgumentException("Invalid file URL: $fileUrl")
         }
 
-        Resource resource = fileStorageService.loadFileAsResource(fileUrl);
+        val resource = fileStorageService.loadFileAsResource(fileUrl)
 
-        String contentType = null;
+        var contentType: String? = null
         try {
-            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-        } catch (IOException ex) {
+            contentType = request.servletContext.getMimeType(resource.file.absolutePath)
+        } catch (ex: IOException) {
             // fallback to the default content type if type could not be determined
-            contentType = "application/octet-stream";
+            contentType = "application/octet-stream"
         }
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+            .contentType(MediaType.parseMediaType(contentType))
+            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"${resource.filename}\"")
+            .body(resource)
     }
 }
