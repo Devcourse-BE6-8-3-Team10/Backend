@@ -6,14 +6,12 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Slf4j
@@ -28,12 +26,11 @@ public class LocalFileStorageService implements FileStorageService {
     private long maxFileSize;
 
     @Override
-    public String storeFile(MultipartFile file, String subFolder) {
-        if (file.getSize() > maxFileSize) {
+    public String storeFile(byte[] fileContent, String originalFilename, String contentType, String subFolder) {
+        if (fileContent.length > maxFileSize) {
             throw new RuntimeException("파일 크기가 너무 큽니다. 최대 " + (maxFileSize / (1024 * 1024)) + "MB까지 업로드 가능합니다.");
         }
 
-        String contentType = file.getContentType();
         if (contentType == null || !isAllowedFileType(contentType)) {
             throw new RuntimeException("허용되지 않는 파일 형식입니다.");
         }
@@ -42,14 +39,13 @@ public class LocalFileStorageService implements FileStorageService {
             Path uploadPath = Paths.get(uploadDir, subFolder).toAbsolutePath().normalize();
             Files.createDirectories(uploadPath);
 
-            String originalFilename = file.getOriginalFilename();
             String fileExtension = getExtension(originalFilename);
-            String uniqueFileName = UUID.randomUUID().toString() + fileExtension; // 고유한 파일명 생성
+            String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
             Path targetLocation = uploadPath.resolve(uniqueFileName);
 
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            Files.write(targetLocation, fileContent);
 
-            return "/files/" + subFolder + "/" + uniqueFileName; // 로컬 접근 URL 반환
+            return "/files/" + subFolder + "/" + uniqueFileName;
         } catch (IOException e) {
             throw new RuntimeException("로컬 파일 시스템에 파일 저장 실패: " + e.getMessage(), e);
         }

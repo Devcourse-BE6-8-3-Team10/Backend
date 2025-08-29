@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -33,4 +32,30 @@ public class Files extends BaseEntity {
     // 정렬 순서
     @Column(nullable = false)
     private int sortOrder;
+
+    public Post getPost() {
+        return post;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public String getFileType() {
+        return fileType;
+    }
+
+    public long getFileSize() {
+        return fileSize;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public int getSortOrder() {
+        return sortOrder;
+    }
 }
+
+

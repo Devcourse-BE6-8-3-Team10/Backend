@@ -1,4 +1,3 @@
-// FilesService.java
 package com.back.domain.files.files.service;
 
 import com.back.domain.files.files.dto.FileUploadResponseDto;
@@ -12,11 +11,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async; // 새롭게 추가된 import
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,9 +29,10 @@ public class FilesService {
     private final FileStorageService fileStorageService;
     private final PostRepository postRepository;
     private final Rq rq;
+    private final AsyncFileService asyncFileService;
 
     // 파일 업로드 서비스 (동기 호출)
-    public RsData<String> uploadFiles(Long postId, MultipartFile[] files) { // 반환 타입을 RsData<String>으로 변경
+    public RsData<String> uploadFiles(Long postId, MultipartFile[] files) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다: " + postId));
 
@@ -40,8 +40,42 @@ public class FilesService {
             throw new IllegalArgumentException("게시글 작성자만 파일을 업로드할 수 있습니다.");
         }
 
-        // 비동기 파일 업로드 메서드 호출
-        uploadFilesAsync(post, files);
+        if (files == null || files.length == 0) {
+            return new RsData<>(
+                    "200",
+                    "업로드할 파일이 없습니다.",
+                    "No files to upload"
+            );
+        }
+
+        List<AsyncFileService.FileData> fileDataList = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) {
+                continue;
+            }
+
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || originalFilename.isBlank()) {
+                continue;
+            }
+
+            String contentType = file.getContentType();
+            if (contentType == null || contentType.isBlank()) {
+                contentType = "application/octet-stream";
+            }
+
+            try {
+                byte[] content = file.getBytes();
+                fileDataList.add(new AsyncFileService.FileData(originalFilename, contentType, content));
+            } catch (IOException e) {
+                log.error("파일을 읽는 중 오류가 발생했습니다: " + originalFilename, e);
+                // Optionally, you can decide to stop the whole process if one file fails
+                // For now, we just skip the failed file
+            }
+        }
+
+        // Pass the list of byte arrays to the async service
+        asyncFileService.uploadFilesAsync(post.getId(), fileDataList);
 
         // 파일 처리 시작을 알리는 즉각적인 응답
         return new RsData<>(
@@ -51,55 +85,10 @@ public class FilesService {
         );
     }
 
-    @Async // 비동기적으로 실행되도록 설정
-    @Transactional
-    public void uploadFilesAsync(Post post, MultipartFile[] files) {
-        List<FileUploadResponseDto> responseList = new ArrayList<>();
-        int sortOrder = 1;
-
-        if (files != null) {
-            for (MultipartFile file : files) {
-                if (file.isEmpty()) {
-                    continue;
-                }
-
-                String fileName = file.getOriginalFilename();
-                if (fileName == null || fileName.trim().isEmpty()) {
-                    continue;
-                }
-
-                String fileType = file.getContentType();
-                long fileSize = file.getSize();
-
-                String fileUrl = null;
-                try {
-                    // 파일을 스토리지에 저장하고 URL을 받아옴
-                    fileUrl = fileStorageService.storeFile(file, "post_" + post.getId());
-                } catch (RuntimeException e) {
-                    log.error("파일 저장 실패, 건너뜀: " + fileName, e);
-                    continue;
-                }
-
-                // 파일 메타데이터를 데이터베이스에 저장
-                filesRepository.save(
-                        Files.builder()
-                                .post(post)
-                                .fileName(fileName)
-                                .fileType(fileType)
-                                .fileSize(fileSize)
-                                .fileUrl(fileUrl)
-                                .sortOrder(sortOrder++)
-                                .build()
-                );
-            }
-        }
-        log.info("게시글 ID {}에 대한 파일 업로드가 비동기적으로 완료되었습니다.", post.getId());
-    }
-
 
     // 게시글 ID로 파일 조회 서비스
     public RsData<List<FileUploadResponseDto>> getFilesByPostId(Long postId) {
-        List<Files> files = filesRepository.findByPostIdOrderBySortOrderAsc(postId);
+        List<Files> files = filesRepository.findWithPostByPostId(postId);
 
         List<FileUploadResponseDto> result = files.stream()
                 .map(FileUploadResponseDto::from)
