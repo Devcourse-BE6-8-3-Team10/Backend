@@ -17,15 +17,19 @@ data class FavoritePostDTO(
         // 엔티티 객체로부터 DTO를 생성하는 팩토리 메서드
         @JvmStatic
         fun of(favoritePost: FavoritePost, isLiked: Boolean): FavoritePostDTO {
-            val post = favoritePost.post
+            val post = requireNotNull(favoritePost.post) { "FavoritePost.post must not be null" }
+            val statusLabel = post.status?.label
+                ?: error("Post.status (label) must not be null")
+            val createdAt = post.createdAt
+                ?: error("Post.createdAt must not be null")
             return FavoritePostDTO(
                 postId = post.id,
                 title = post.title,
                 price = post.price,
                 favoriteCnt = post.favoriteCnt,
-                status = post.status.label,
+                status = statusLabel,
                 isLiked = isLiked,
-                createdAt = post.createdAt
+                createdAt = createdAt
             )
         }
     }
