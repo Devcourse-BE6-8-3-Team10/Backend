@@ -29,9 +29,6 @@ public class Files extends BaseEntity {
     @Column(nullable = false)
     private String fileUrl;
 
-//    public String getFileUrl() {
-//        return fileUrl;
-//    }
     // 정렬 순서
     @Column(nullable = false)
     private int sortOrder;
