@@ -6,6 +6,8 @@ import com.back.domain.chat.chat.repository.ChatRoomRepository;
 import com.back.domain.chat.chat.repository.MessageRepository;
 import com.back.domain.member.entity.Member;
 import com.back.domain.member.repository.MemberRepository;
+import com.back.domain.post.entity.Post;
+import com.back.domain.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -27,6 +29,7 @@ public class ChatDataInitializer implements ApplicationRunner {
     private final ChatRoomRepository chatRoomRepository;
     private final MessageRepository messageRepository;
     private final MemberRepository memberRepository;
+    private final PostRepository postRepository;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -92,11 +95,13 @@ public class ChatDataInitializer implements ApplicationRunner {
 
     private void createChatRoomIfNotExists(String roomName) {
         // 같은 이름의 채팅방이 없으면 생성
+        Post post = postRepository.findById(1L).get();
+
         if (chatRoomRepository.findByRoomName(roomName) == null) {
             ChatRoom chatRoom = new ChatRoom();
-            chatRoom.setRoomName(roomName);
+            chatRoom.updateRoomName(roomName);
             // post는 일단 null로 설정 (나중에 게시글과 연결)
-            chatRoom.setPost(null);
+            chatRoom.updatePost(post);
 
             chatRoomRepository.save(chatRoom);
             log.info("채팅방 '{}' 이 생성되었습니다.", roomName);

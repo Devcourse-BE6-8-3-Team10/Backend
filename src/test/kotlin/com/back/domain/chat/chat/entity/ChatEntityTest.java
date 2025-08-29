@@ -103,9 +103,9 @@ class ChatEntityTest {
             ChatRoom chatRoom = new ChatRoom();
 
             // When
-            chatRoom.setPost(testPost);
-            chatRoom.setMember(testUser);
-            chatRoom.setRoomName("테스트 채팅방");
+            chatRoom.updatePost(testPost);
+            chatRoom.updateMember(testUser);
+            chatRoom.updateRoomName("테스트 채팅방");
 
             // Then
             assertThat(chatRoom.getPost()).isEqualTo(testPost);

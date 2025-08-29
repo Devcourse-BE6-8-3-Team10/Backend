@@ -171,11 +171,12 @@ class ChatService(
             val lastMessage = messageRepository.findFirstByChatRoomIdOrderByCreatedAtDesc(chatRoom.getId())
             val lastContent = lastMessage?.getContent() ?: "대화를 시작해보세요."
 
+            //이거 에케처리함?
             ChatRoomDto(
-                chatRoom.getId(),
-                chatRoom.getRoomName(),
-                chatRoom.getPost().getId(),
-                lastContent
+                    chatRoom.id,
+            chatRoom.roomName ?: "이름없음",
+            chatRoom.post?.id ?: 0 ,
+            lastContent
             )
         }
     }
