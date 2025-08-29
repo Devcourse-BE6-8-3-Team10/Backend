@@ -1,34 +1,17 @@
 package com.back.domain.files.files.entity;
 
 import com.back.domain.post.entity.Post;
+import com.back.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Builder
 @Table(name = "files")
-@EntityListeners(AuditingEntityListener.class)  // BaseEntity에서 가져온 부분
-public class Files {
+public class Files extends BaseEntity {
 
-    // BaseEntity에서 가져온 필드들
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @CreatedDate
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    private LocalDateTime modifiedAt;
-
-    // 기존 Files 필드들
+    // 연관 게시글 참조
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
@@ -45,23 +28,11 @@ public class Files {
     @Column(nullable = false)
     private String fileUrl;
 
+    // 정렬 순서
     @Column(nullable = false)
     private int sortOrder;
 
-    // BaseEntity에서 가져온 Getter 메서드들
-    public Long getId() {
-        return id;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getModifiedAt() {
-        return modifiedAt;
-    }
-
-    // 기존 Files Getter 메서드들
+    // Kotlin 호환을 위한 Getter 메서드들
     public Post getPost() {
         return post;
     }
@@ -86,7 +57,7 @@ public class Files {
         return sortOrder;
     }
 
-    // 직접 생성자 (BaseEntity 필드 포함)
+    // 생성자 (BaseEntity 상속으로 id, createdAt, modifiedAt 제외)
     public Files(Post post, String fileName, String fileType, long fileSize, String fileUrl, int sortOrder) {
         this.post = post;
         this.fileName = fileName;
