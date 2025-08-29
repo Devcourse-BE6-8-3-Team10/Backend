@@ -11,7 +11,7 @@ data class PostListDTO(
     val category: String,
     val favoriteCnt: Int,
     val createdAt: LocalDateTime,
-    val imageUrl: String
+    val imageUrl: String?
 ) {
     companion object {
         // Post 엔티티를 PostListDTO로 변환하는 함수
@@ -24,7 +24,7 @@ data class PostListDTO(
                 category = post.category.name,
                 favoriteCnt = post.favoriteCnt,
                 createdAt = post.createdAt,
-                imageUrl = post.postFiles.first().fileUrl
+                imageUrl = post.postFiles.firstOrNull()?.fileUrl
             )
         }
     }
