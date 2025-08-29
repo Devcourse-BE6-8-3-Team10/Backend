@@ -12,7 +12,7 @@ data class FileUploadResponseDto(
     val fileSize: Long,
     val fileUrl: String,
     val sortOrder: Int,
-    val createdAt: LocalDateTime?
+    val createdAt: LocalDateTime
 ) {
     companion object {
         // Entity를 DTO로 변환하는 정적 팩토리 메서드
