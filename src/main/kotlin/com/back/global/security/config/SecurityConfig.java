@@ -88,7 +88,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
+
         // 허용할 오리진 설정 (개발 환경)
         configuration.setAllowedOrigins(List.of(
             "http://localhost:3000",
@@ -97,25 +97,25 @@ public class SecurityConfig {
             "https://frontend-devteam-10.vercel.app",
             "https://www.devteam10.org"
         ));
-        
+
         // 허용할 HTTP 메서드 설정 (PATCH 추가)
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        
+
         // 허용할 헤더 설정
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        
+
         // 인증 정보 포함 허용
         configuration.setAllowCredentials(true);
-        
+
         // 노출할 헤더 설정
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
-        
+
         // 프리플라이트 요청 캐시 시간 설정 (1시간)
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-        
+
         return source;
     }
 
