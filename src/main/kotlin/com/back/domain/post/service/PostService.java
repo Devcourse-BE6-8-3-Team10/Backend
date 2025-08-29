@@ -93,7 +93,7 @@ public class PostService {
     public List<PostListDTO> getPostList() {
         return postRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
-                .map(PostListDTO::from)
+                .map(PostListDTO::of)
                 .toList();
     }
 
@@ -112,7 +112,7 @@ public class PostService {
     public List<PostListDTO> getTop10PopularPosts() {
         return postRepository.findTop10ByOrderByFavoriteCntDesc()
                 .stream()
-                .map(PostListDTO::from)
+                .map(PostListDTO::of)
                 .toList();
     }
 
@@ -160,7 +160,7 @@ public class PostService {
         List<FavoritePost> favoritePosts = favoritePostRepository.findByMemberOrderByPostCreatedAtDesc(member);
         return favoritePosts.stream()
                 .map(FavoritePost::getPost)
-                .map(PostListDTO::from)
+                .map(PostListDTO::of)
                 .toList();
     }
 
@@ -170,7 +170,7 @@ public class PostService {
         Member member = getCurrentMemberOrThrow();
         return postRepository.findByMember(member)
                 .stream()
-                .map(PostListDTO::from)
+                .map(PostListDTO::of)
                 .toList();
     }
 

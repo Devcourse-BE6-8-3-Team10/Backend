@@ -51,6 +51,7 @@ public class Post extends BaseEntity {
 
     // 게시글 1 ↔ 채팅방 N
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<ChatRoom> chatRooms = new ArrayList<>();
 
     // 게시글 1 ↔ 거래 1
@@ -59,10 +60,12 @@ public class Post extends BaseEntity {
 
     // 게시글 1 ↔ 첨부파일 N
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Files> postFiles = new ArrayList<>();
 
     // 게시글 1 ↔ 찜 N
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<FavoritePost> favoritePosts = new ArrayList<>();
 
     public Member getMember() {
