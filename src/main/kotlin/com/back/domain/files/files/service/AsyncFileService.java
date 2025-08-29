@@ -26,7 +26,8 @@ public class AsyncFileService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("비동기 처리 중 게시글을 찾을 수 없습니다: " + postId));
 
-        int sortOrder = 1;
+        // 1. sortOrder 시작 값 설정 (Fix 1)
+        int sortOrder = filesRepository.findMaxSortOrderByPostId(postId).orElse(0) + 1;
 
         if (files != null) {
             for (MultipartFile file : files) {
@@ -39,7 +40,12 @@ public class AsyncFileService {
                     continue;
                 }
 
+                // 2. fileType null 체크 및 기본값 설정 (Fix 2)
                 String fileType = file.getContentType();
+                if (fileType == null || fileType.isBlank()) {
+                    fileType = "application/octet-stream";
+                }
+
                 long fileSize = file.getSize();
 
                 String fileUrl = null;

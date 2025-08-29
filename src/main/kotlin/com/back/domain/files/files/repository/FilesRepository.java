@@ -20,6 +20,9 @@ public interface FilesRepository extends JpaRepository<Files, Long> {
     @Query("SELECT f FROM Files f JOIN FETCH f.post WHERE f.post.id = :postId ORDER BY f.sortOrder ASC")
     List<Files> findWithPostByPostId(@Param("postId") Long postId);
 
+    @Query("SELECT MAX(f.sortOrder) FROM Files f WHERE f.post.id = :postId")
+    Optional<Integer> findMaxSortOrderByPostId(@Param("postId") Long postId);
+
     @Override
     @EntityGraph(attributePaths = {"post"})
     Page<Files> findAll(Pageable pageable);
