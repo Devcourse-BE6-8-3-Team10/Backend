@@ -21,21 +21,21 @@ class ChatWebSocketController(
     @MessageMapping("/sendMessage")
     fun sendMessage(chatMessage: MessageDto) {
         log.info("=== WebSocket 메시지 수신 ===")
-        log.debug("sender: {}", chatMessage.senderName)
-        log.debug("chatRoomId: {}", chatMessage.chatRoomId)
+        log.debug("sender: ${chatMessage.senderName}")
+        log.debug("chatRoomId: ${chatMessage.chatRoomId}")
         log.info("=================")
 
         try {
             // 1. 메시지 저장 (기존과 동일)
             val savedMessage = chatService.saveMessage(chatMessage)
-            log.info("메시지 저장 완료: {}", savedMessage.getId())
+            log.info("메시지 저장 완료: ${savedMessage.id}" )
 
             // 2. 권한 체크: 발신자가 해당 채팅방 참여자인지 확인
             val isParticipant = chatService.isParticipant(chatMessage.chatRoomId, chatMessage.senderId)
             if (!isParticipant) {
                 log.warn(
-                    "권한 없음: 사용자 {}는 채팅방 {}의 참여자가 아닙니다",
-                    chatMessage.senderId, chatMessage.chatRoomId
+                    "권한 없음: 사용자 ${chatMessage.senderId}는 채팅방 ${chatMessage.chatRoomId}의 참여자가 아닙니다",
+
                 )
 
                 // 에러 메시지 전송
@@ -48,7 +48,7 @@ class ChatWebSocketController(
             redisMessageService.publishMessage(chatMessage)
             log.info("✅ Redis 메시지 발행 완료! 모든 서버 인스턴스에 전달됨")
         } catch (e: Exception) {
-            log.error("❌ 메시지 처리 중 에러 발생: {}", e.message, e)
+            log.error("❌ 메시지 처리 중 에러 발생: ${e.message}")
 
             // 에러 메시지는 발신자에게만 전송
             sendErrorMessage(chatMessage.senderEmail, "메시지 전송에 실패했습니다: ${e.message}")
@@ -64,9 +64,9 @@ class ChatWebSocketController(
                 "/queue/error",
                 errorMsg
             )
-            log.info("에러 메시지 전송 완료: {} -> {}", userEmail, errorMessage)
+            log.info("에러 메시지 전송 완료: ${ userEmail} -> ${errorMessage}")
         } catch (errorSendFail: Exception) {
-            log.error("에러 메시지 전송도 실패: {}", errorSendFail.message, errorSendFail)
+            log.error("에러 메시지 전송도 실패: ${ errorSendFail.message}")
         }
     }
 }
