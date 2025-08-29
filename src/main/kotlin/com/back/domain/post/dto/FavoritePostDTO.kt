@@ -4,7 +4,6 @@ import com.back.domain.post.entity.FavoritePost
 import java.time.LocalDateTime
 
 //찜 목록 응답용
-@JvmRecord
 data class FavoritePostDTO(
     val postId: Long,
     val title: String,

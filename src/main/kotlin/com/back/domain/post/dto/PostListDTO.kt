@@ -16,7 +16,7 @@ data class PostListDTO(
     companion object {
         // Post 엔티티를 PostListDTO로 변환하는 함수
         @JvmStatic
-        fun from(post: Post): PostListDTO {
+        fun of(post: Post): PostListDTO {
             return PostListDTO(
                 id = post.id,
                 title = post.title,

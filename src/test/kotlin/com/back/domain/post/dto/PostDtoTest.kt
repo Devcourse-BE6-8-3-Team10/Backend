@@ -46,14 +46,14 @@ class PostAndFavoriteDtosTest {
     }
 
     // -----------------------------
-    // 2) PostListDTO.from 매핑 검증
+    // 2) PostListDTO.of 매핑 검증
     // -----------------------------
     @Test
-    @DisplayName("PostListDTO.from: Post → 목록 DTO로 올바르게 매핑된다")
-    fun postListDTO_from() {
+    @DisplayName("PostListDTO.of: Post → 목록 DTO로 올바르게 매핑된다")
+    fun postListDTO_of() {
         val (post, _, _) = makePostWithMemberAndFile()
 
-        val dto = PostListDTO.from(post)
+        val dto = PostListDTO.of(post)
 
         assertThat(dto.id).isEqualTo(1L)
         assertThat(dto.title).isEqualTo("제목")
@@ -88,11 +88,11 @@ class PostAndFavoriteDtosTest {
     }
 
     // -----------------------------
-    // 4) FavoritePostDTO.from 매핑 검증
+    // 4) FavoritePostDTO.of 매핑 검증
     // -----------------------------
     @Test
-    @DisplayName("FavoritePostDTO.from: FavoritePost → DTO로 올바르게 매핑된다")
-    fun favoritePostDTO_from() {
+    @DisplayName("FavoritePostDTO.of: FavoritePost → DTO로 올바르게 매핑된다")
+    fun favoritePostDTO_of() {
         val (favoritePost, post) = makeFavoritePost()
 
         val dto = FavoritePostDTO.of(favoritePost, isLiked = true)
@@ -159,7 +159,6 @@ class PostAndFavoriteDtosTest {
             ReflectionTestUtils.setField(this, "sortOrder", 1)
         }
 
-        // Java List를 안전하게 캐스팅해서 추가
         @Suppress("UNCHECKED_CAST")
         val filesList = post.postFiles as MutableList<Files>
         filesList.add(file)
@@ -169,7 +168,6 @@ class PostAndFavoriteDtosTest {
 
     private fun makeFavoritePost(): Pair<FavoritePost, Post> {
         val (post, member, _) = makePostWithMemberAndFile().let { Triple(it.first, it.second, it.third) }
-        // favoriteCnt만 테스트 케이스에 맞춰 덮어쓰기
         ReflectionTestUtils.setField(post, "favoriteCnt", 7)
 
         val favoritePost = newInstance(FavoritePost::class.java).apply {
