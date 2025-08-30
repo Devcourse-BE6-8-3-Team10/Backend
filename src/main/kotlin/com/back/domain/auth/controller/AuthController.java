@@ -134,7 +134,7 @@ public class AuthController {
         // 새로운 AccessToken을 쿠키에 설정
         ResponseCookie accessTokenCookie = createCookie(
                 "accessToken",
-                reissueResponse.accessToken(),
+                reissueResponse.getAccessToken(),
                 (int) (accessTokenValidity / 1000),
                 false,
                 false
@@ -143,7 +143,7 @@ public class AuthController {
         // 새로운 RefreshToken을 쿠키에 설정
         ResponseCookie refreshTokenCookie = createCookie(
                 "refreshToken",
-                reissueResponse.refreshToken(),
+                reissueResponse.getRefreshToken(),
                 (int) (refreshTokenValidity / 1000),
                 true,
                 false
