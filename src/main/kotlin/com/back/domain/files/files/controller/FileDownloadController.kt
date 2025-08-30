@@ -16,6 +16,12 @@ class FileDownloadController(
     private val fileStorageService: FileStorageService
 ) {
 
+    // 안전한 inline 제공이 가능한 MIME 타입들
+    private val safeInlineTypes = setOf(
+        "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp",
+        "application/pdf"
+    )
+
     // 파일 다운로드 API
     @GetMapping("/**")
     fun downloadFile(request: HttpServletRequest): ResponseEntity<Resource> {
@@ -28,7 +34,7 @@ class FileDownloadController(
             requestURI
         }
 
-        // 1차 방어: 기본적인 경로 순회 패턴 차단 (기존 로직 유지)
+        // 1차 방어: 기본적인 경로 순회 패턴 차단
         if (fileUrl.contains("..") || fileUrl.contains("./") || fileUrl.contains("\\")) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid file URL")
         }
@@ -37,46 +43,26 @@ class FileDownloadController(
         val resource = try {
             fileStorageService.loadFileAsResource(fileUrl)
         } catch (e: RuntimeException) {
-            // Storage에서 발생한 예외를 404로 변환
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "File not found", e)
         }
 
-        // 안전한 MIME 타입 결정 (NPE 방지)
-        val contentType = determineContentType(resource.filename)
+        // MediaTypeFactory로 MIME 타입 결정
+        val mediaType = MediaTypeFactory.getMediaType(resource.filename ?: "")
+            .orElse(MediaType.APPLICATION_OCTET_STREAM)
 
-        // 한글/비ASCII 파일명 안전 처리
-        val contentDisposition = ContentDisposition.inline()
-            .filename(resource.filename ?: "download", StandardCharsets.UTF_8)
+        // 안전한 콘텐츠는 inline, 위험한 콘텐츠는 attachment로 처리
+        val isInlineSafe = safeInlineTypes.contains(mediaType.toString())
+        val contentDisposition = if (isInlineSafe) {
+            ContentDisposition.inline()
+        } else {
+            ContentDisposition.attachment()
+        }.filename(resource.filename ?: "download", StandardCharsets.UTF_8)
             .build()
 
         return ResponseEntity.ok()
-            .contentType(MediaType.parseMediaType(contentType))
+            .contentType(mediaType)
             .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
+            .header("X-Content-Type-Options", "nosniff")  // 브라우저 스니핑 방지
             .body(resource)
-    }
-
-    /**
-     * 파일명 기반 MIME 타입 결정 (NPE 방지, 파일시스템 접근 없음)
-     */
-    private fun determineContentType(filename: String?): String {
-        if (filename == null) return "application/octet-stream"
-
-        return when {
-            filename.endsWith(".jpg", true) || filename.endsWith(".jpeg", true) -> "image/jpeg"
-            filename.endsWith(".png", true) -> "image/png"
-            filename.endsWith(".gif", true) -> "image/gif"
-            filename.endsWith(".webp", true) -> "image/webp"
-            filename.endsWith(".pdf", true) -> "application/pdf"
-            filename.endsWith(".txt", true) -> "text/plain"
-            filename.endsWith(".csv", true) -> "text/csv"
-            filename.endsWith(".doc", true) -> "application/msword"
-            filename.endsWith(".docx", true) -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            filename.endsWith(".xls", true) -> "application/vnd.ms-excel"
-            filename.endsWith(".xlsx", true) -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            filename.endsWith(".zip", true) -> "application/zip"
-            filename.endsWith(".mp4", true) -> "video/mp4"
-            filename.endsWith(".mp3", true) -> "audio/mpeg"
-            else -> "application/octet-stream"
-        }
     }
 }
