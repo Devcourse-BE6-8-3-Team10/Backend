@@ -54,17 +54,7 @@ public class AdminService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ResultCode.MEMBER_NOT_FOUND.code(), "해당 회원이 존재하지 않습니다."));
 
-        // 1. 이름 변경 (@Valid로 검증되므로 null/blank 체크 불필요)
-        if (request.getName() != null) {
-            member.updateName(request.getName());
-        }
-
-        // 2. 상태 변경
-        if (request.getStatus() != null) {
-            member.changeStatus(request.getStatus());
-        }
-
-        // 3. 프로필 이미지 변경
+        // 프로필 이미지 변경
         if (request.getProfileUrl() != null) {
             String profileUrl = request.getProfileUrl().trim().isEmpty() ? null : request.getProfileUrl();
             member.updateProfileUrl(profileUrl);
