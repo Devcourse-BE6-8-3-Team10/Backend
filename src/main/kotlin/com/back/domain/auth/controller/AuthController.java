@@ -57,7 +57,7 @@ public class AuthController {
         // AccessToken 쿠키 생성 (자동 전송용)
         ResponseCookie accessTokenCookie = createCookie(
                 "accessToken",
-                loginResponse.accessToken(),
+                loginResponse.getAccessToken(),
                 (int) (accessTokenValidity / 1000), // application.yml과 일치
                 false, // 프로덕션 환경에서는 true
                 false // prod 환경이면 true로 분기
@@ -66,7 +66,7 @@ public class AuthController {
         // RefreshToken 쿠키 생성 (HttpOnly 쿠키로 설정, 보안용)
         ResponseCookie refreshTokenCookie = createCookie(
                 "refreshToken",
-                loginResponse.refreshToken(),
+                loginResponse.getRefreshToken(),
                 (int) (refreshTokenValidity / 1000), // application.yml과 일치
                 true,
                 false // 프로덕션 환경에서는 true
@@ -134,7 +134,7 @@ public class AuthController {
         // 새로운 AccessToken을 쿠키에 설정
         ResponseCookie accessTokenCookie = createCookie(
                 "accessToken",
-                reissueResponse.accessToken(),
+                reissueResponse.getAccessToken(),
                 (int) (accessTokenValidity / 1000),
                 false,
                 false
@@ -143,7 +143,7 @@ public class AuthController {
         // 새로운 RefreshToken을 쿠키에 설정
         ResponseCookie refreshTokenCookie = createCookie(
                 "refreshToken",
-                reissueResponse.refreshToken(),
+                reissueResponse.getRefreshToken(),
                 (int) (refreshTokenValidity / 1000),
                 true,
                 false
