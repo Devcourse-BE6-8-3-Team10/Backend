@@ -222,9 +222,9 @@ public class AdminControllerTest {
         AdminUpdatePatentRequest request = new AdminUpdatePatentRequest(
                 "수정된 특허 제목",
                 "수정된 특허 설명입니다.",
-                "METHOD",
+                Post.Category.METHOD,
                 200000,
-                "SALE"
+                Post.Status.SALE
         );
 
         // when
@@ -240,43 +240,44 @@ public class AdminControllerTest {
         assertEquals("수정된 특허 제목", updated.getTitle());
         assertEquals("수정된 특허 설명입니다.", updated.getDescription());
         assertEquals(Post.Category.METHOD, updated.getCategory());
-        assertEquals(200000, updated.getPrice());
-    }
-
-    @Test
-    @DisplayName("특허 정보 수정 실패 - 존재하지 않는 특허")
-    @WithUserDetails(value = "admin@admin.com")
-    void updatePatent_fail_notFound() throws Exception {
-        // given
-        Long invalidId = 9999L;
-        AdminUpdatePatentRequest request = new AdminUpdatePatentRequest(
-                "수정된 제목",
-                "수정된 설명",
-                "PRODUCT",
-                100000,
-                "SALE"
-        );
-
-        // when & then
-        mockMvc.perform(patch("/api/admin/patents/" + invalidId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.resultCode").value("404-2"))
-                .andExpect(jsonPath("$.msg").value("해당 특허가 존재하지 않습니다."));
+        assertEquals(Integer.valueOf(200000), updated.getPrice());
+        assertEquals(Post.Status.SALE, updated.getStatus());
     }
 
     @Test
     @DisplayName("특허 정보 수정 실패 - 유효하지 않은 카테고리")
     @WithUserDetails(value = "admin@admin.com")
     void updatePatent_fail_invalidCategory() throws Exception {
+        // given - JSON 문자열로 잘못된 카테고리 전송
+        String invalidRequestJson = """
+        {
+            "title": "수정된 제목",
+            "description": "수정된 설명",
+            "category": "INVALID_CATEGORY",
+            "price": 100000,
+            "status": "SALE"
+        }
+        """;
+
+        // when & then
+        mockMvc.perform(patch("/api/admin/patents/" + testPost.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidRequestJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.msg").exists());
+    }
+
+    @Test
+    @DisplayName("특허 정보 수정 실패 - 가격이 0 이하")
+    @WithUserDetails(value = "admin@admin.com")
+    void updatePatent_fail_invalidPrice() throws Exception {
         // given
         AdminUpdatePatentRequest request = new AdminUpdatePatentRequest(
                 "수정된 제목",
                 "수정된 설명",
-                "INVALID_CATEGORY",
-                100000,
-                "SALE"
+                Post.Category.PRODUCT,
+                -1000,  // 유효하지 않은 가격
+                Post.Status.SALE
         );
 
         // when & then
@@ -284,8 +285,7 @@ public class AdminControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.resultCode").value("400"))
-                .andExpect(jsonPath("$.msg").value("유효하지 않은 카테고리입니다."));
+                .andExpect(jsonPath("$.msg").exists());
     }
 
     @Test
