@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
 
 @DisplayName("Chat 엔티티 테스트")
 internal class ChatEntityTest {
@@ -172,16 +171,20 @@ internal class ChatEntityTest {
     internal inner class RoomParticipantTest {
 
         @Test
-        @DisplayName("RoomParticipant 기본 생성자 테스트")
+        @DisplayName("RoomParticipant 생성자 테스트")
         fun t8() {
-            // Given & When
-            val participant = RoomParticipant()
+            // Given
+            val chatRoom = ChatRoom(testPost, testUser)
+
+            // When
+            val participant = RoomParticipant(chatRoom, testUser)
 
             // Then
             assertThat(participant).isNotNull
-            assertThat(participant.chatRoom).isNull()
-            assertThat(participant.member).isNull()
+            assertThat(participant.chatRoom).isEqualTo(chatRoom)
+            assertThat(participant.member).isEqualTo(testUser)
             assertThat(participant.leftAt).isNull()
+            assertThat(participant.isActive).isTrue
         }
 
         @Test
@@ -196,59 +199,55 @@ internal class ChatEntityTest {
             // Then
             assertThat(participant.chatRoom).isEqualTo(chatRoom)
             assertThat(participant.member).isEqualTo(testUser)
-            assertThat(participant.isActive()).isTrue
+            assertThat(participant.isActive).isTrue
             assertThat(participant.leftAt).isNull()
         }
 
         @Test
-        @DisplayName("RoomParticipant Getter/Setter 테스트")
+        @DisplayName("RoomParticipant leave/activate 메서드 테스트")
         fun t10() {
             // Given
-            val participant = RoomParticipant()
             val chatRoom = ChatRoom(testPost, testUser)
-            val leftTime = LocalDateTime.now()
+            val participant = RoomParticipant(chatRoom, testUser)
 
-            // When
-            participant.apply {
-                setChatRoom(chatRoom)
-                setMember(testUser)
-                setActive(false)
-                setLeftAt(leftTime)
-            }
+            // When - 채팅방 나가기
+            participant.leave()
 
             // Then
-            assertThat(participant.chatRoom).isEqualTo(chatRoom)
-            assertThat(participant.member).isEqualTo(testUser)
-            assertThat(participant.isActive()).isFalse
-            assertThat(participant.leftAt).isEqualTo(leftTime)
+            assertThat(participant.isActive).isFalse
+            assertThat(participant.leftAt).isNotNull
+
+            // When - 채팅방 재활성화
+            participant.activate()
+
+            // Then
+            assertThat(participant.isActive).isTrue
+            assertThat(participant.leftAt).isNull()
         }
 
         @Test
-        @DisplayName("RoomParticipant 활성 상태 변경 테스트")
+        @DisplayName("RoomParticipant 상태 변경 시나리오 테스트")
         fun t11() {
             // Given
             val chatRoom = ChatRoom(testPost, testUser)
             val participant = RoomParticipant(chatRoom, testUser)
-            val leftTime = LocalDateTime.now()
 
-            // When - 비활성화
-            participant.apply {
-                setActive(false)
-                setLeftAt(leftTime)
-            }
+            // 초기 상태 확인
+            assertThat(participant.isActive).isTrue
+            assertThat(participant.leftAt).isNull()
 
-            // Then
-            assertThat(participant.isActive()).isFalse
-            assertThat(participant.leftAt).isEqualTo(leftTime)
-
-            // When - 다시 활성화
-            participant.apply {
-                setActive(true)
-                setLeftAt(null)
-            }
+            // When - 채팅방 나가기
+            participant.leave()
 
             // Then
-            assertThat(participant.isActive()).isTrue
+            assertThat(participant.isActive).isFalse
+            assertThat(participant.leftAt).isNotNull
+
+            // When - 재참여
+            participant.rejoin()
+
+            // Then
+            assertThat(participant.isActive).isTrue
             assertThat(participant.leftAt).isNull()
         }
     }

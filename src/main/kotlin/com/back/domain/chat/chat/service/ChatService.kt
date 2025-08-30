@@ -1,10 +1,9 @@
 package com.back.domain.chat.chat.service
 
-import com.back.domain.chat.chat.entity.Message
 import com.back.domain.chat.chat.dto.ChatRoomDto
 import com.back.domain.chat.chat.dto.MessageDto
 import com.back.domain.chat.chat.entity.ChatRoom
-
+import com.back.domain.chat.chat.entity.Message
 import com.back.domain.chat.chat.entity.RoomParticipant
 import com.back.domain.chat.chat.repository.ChatRoomRepository
 import com.back.domain.chat.chat.repository.MessageRepository
@@ -18,7 +17,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.security.Principal
-import java.time.LocalDateTime
 
 @Service
 class ChatService(
@@ -139,8 +137,7 @@ class ChatService(
                 if (hasRequester && hasPostAuthor) {
                     // 기존 채팅방 발견 - 두 참여자 모두 다시 활성화
                     allParticipants.forEach { participant ->
-                        participant.isActive = true
-                        participant.leftAt = null // 나간 시간 초기화
+                        participant.activate()
                     }
                     roomParticipantRepository.saveAll(allParticipants)
 
@@ -167,7 +164,7 @@ class ChatService(
 
         // RoomParticipant에서 ChatRoom 추출 및 DTO 변환
         return participations.map { participation ->
-            val chatRoom = participation.getChatRoom()
+            val chatRoom = participation.chatRoom
             // 마지막 메시지 조회
             val lastMessage = messageRepository.findFirstByChatRoomIdOrderByCreatedAtDesc(chatRoom.getId())
             val lastContent = lastMessage?.content ?: "대화를 시작해보세요."
@@ -194,10 +191,7 @@ class ChatService(
         // 나가기 전에 다른 참여자들에게 알림 메시지 전송
         sendLeaveNotificationToOtherParticipants(chatRoomId, member)
 
-        participant.apply {
-            setActive(false)
-            setLeftAt(LocalDateTime.now())
-        }
+        participant.leave()
         roomParticipantRepository.save(participant)
 
         val hasActiveParticipants = roomParticipantRepository.existsByChatRoomIdAndIsActiveTrue(chatRoomId)

@@ -319,7 +319,7 @@ internal class ChatServiceTest {
 
             verify(roomParticipantRepository).save(testParticipant)
             verify(redisMessageService).publishMessage(any(MessageDto::class.java))
-            assertThat(testParticipant.isActive()).isFalse
+            assertThat(testParticipant.isActive).isFalse
             assertThat(testParticipant.leftAt).isNotNull
         }
 
