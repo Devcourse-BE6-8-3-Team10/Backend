@@ -25,23 +25,25 @@ class FileDownloadController(
     // 파일 다운로드 API
     @GetMapping("/**")
     fun downloadFile(request: HttpServletRequest): ResponseEntity<Resource> {
-        // contextPath를 제거하여 실제 파일 경로만 추출
-        val contextPath = request.contextPath ?: ""
-        val requestURI = request.requestURI
-        val fileUrl = if (contextPath.isNotEmpty() && requestURI.startsWith(contextPath)) {
-            requestURI.substring(contextPath.length)
-        } else {
-            requestURI
+        // contextPath 제거 후 디코딩
+        val rawPath = request.requestURI.removePrefix(request.contextPath ?: "")
+        val decodedPath = java.net.URLDecoder.decode(rawPath, java.nio.charset.StandardCharsets.UTF_8)
+        if (!decodedPath.startsWith("/files/")) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid file URL prefix")
         }
-
-        // 1차 방어: 기본적인 경로 순회 패턴 차단
-        if (fileUrl.contains("..") || fileUrl.contains("./") || fileUrl.contains("\\")) {
+        // "/files/" 이후 경로만 정규화
+        val rest = decodedPath.removePrefix("/files/")
+        val normalized = java.nio.file.Paths.get(rest).normalize()
+        val normStr = normalized.toString()
+        // 절대경로/루트 이탈/백슬래시/의도치 않은 현재 디렉토리 이동 차단
+        if (normalized.isAbsolute || normStr.startsWith("..") || normStr.contains("\\") || normStr.contains("/./") || normStr.contains("//")) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid file URL")
         }
+        val sanitizedFileUrl = "/files/" + normStr.replace('\\', '/')
 
-        // 파일 리소스 로드 (404 변환 처리)
+        // 파일 리소스 로드 (정규화된 경로로 Service 호출)
         val resource = try {
-            fileStorageService.loadFileAsResource(fileUrl)
+            fileStorageService.loadFileAsResource(sanitizedFileUrl)
         } catch (e: RuntimeException) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "File not found", e)
         }
