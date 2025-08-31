@@ -127,6 +127,11 @@ public class Member extends BaseEntity {
     }
 
     public void changeStatus(Status newStatus) {
+        // 탈퇴한 회원은 다른 상태로 변경 불가
+        if (this.status == Status.DELETED) {
+            throw new IllegalStateException("탈퇴한 회원의 상태는 변경할 수 없습니다.");
+        }
+
         this.status = newStatus;
     }
     // 회원 정보 수정 - 끝

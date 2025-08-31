@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +33,6 @@ public class AdminService {
     public Page<AdminMemberResponse> getAllMembers(Pageable pageable) {
         log.info("전체 회원 목록 조회 요청 (관리자 제외)");
 
-        // 페이징 적용 및 DTO 변환하여 반환
         return memberRepository.findAllByRoleNot(Role.ADMIN, pageable)
                 .map(AdminMemberResponse::fromEntity);
     }
@@ -40,33 +40,25 @@ public class AdminService {
     // 회원 상세 조회
     public AdminMemberResponse getMemberDetail(Long memberId) {
         log.info("회원 상세 조회 요청 - memberId: {}", memberId);
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ServiceException(ResultCode.MEMBER_NOT_FOUND.code(), "존재하지 않는 회원입니다."));
-
+        
+        Member member = findMemberById(memberId);
         return AdminMemberResponse.fromEntity(member);
     }
 
     // 회원 정보 수정
     @Transactional
-    public void updateMemberInfo(Long memberId, AdminUpdateMemberRequest request){
+    public void updateMemberInfo(Long memberId, AdminUpdateMemberRequest request) {
         log.info("회원 정보 수정 요청 - memberId: {}", memberId);
 
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ServiceException(ResultCode.MEMBER_NOT_FOUND.code(), "해당 회원이 존재하지 않습니다."));
+        Member member = findMemberById(memberId);
 
-        // 이름 변경 - @NotBlank로 보장됨
-        member.updateName(request.getName());
-
-        // 상태 변경 - @NotNull로 보장됨  
-        member.changeStatus(request.getStatus());
-
-        // 프로필 이미지 변경 - nullable 필드
-        if (request.getProfileUrl() != null) {
-            final String trimmedUrl = request.getProfileUrl().trim();
-            member.updateProfileUrl(trimmedUrl.isEmpty() ? null : trimmedUrl);
+        try {
+            member.updateName(request.getName());
+            member.changeStatus(request.getStatus());
+            updateProfileUrlIfPresent(member, request.getProfileUrl());
+        } catch (IllegalStateException e) {
+            throw new ServiceException("400", e.getMessage());
         }
-
-        memberRepository.save(member);
     }
 
     // 전체 특허 목록 조회
@@ -93,15 +85,9 @@ public class AdminService {
         Post post = postRepository.findById(patentId)
                 .orElseThrow(() -> new ServiceException(ResultCode.POST_NOT_FOUND.code(), "해당 특허가 존재하지 않습니다."));
 
-        // DTO에서 이미 enum 타입으로 받았으므로 직접 사용
-        Post.Category category = request.getCategory();
-        Post.Status status = request.getStatus();
-
         // 엔티티 업데이트
-        post.updatePost(request.getTitle(), request.getDescription(), category, request.getPrice());
-        post.updateStatus(status);
-
-        postRepository.save(post);
+        post.updatePost(request.getTitle(), request.getDescription(), request.getCategory(), request.getPrice());
+        post.updateStatus(request.getStatus());
     }
 
     // 특허 삭제
@@ -120,12 +106,24 @@ public class AdminService {
     public void deleteMember(Long memberId) {
         log.info("회원 탈퇴 요청 - memberId: {}", memberId);
 
-        // 1. 반드시 영속 상태로 다시 가져오기
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ServiceException(ResultCode.MEMBER_NOT_FOUND.code(), "해당 회원이 존재하지 않습니다."));
-
-        // 2. 회원 탈퇴 처리
+        Member member = findMemberById(memberId);
         member.delete();
-        memberRepository.save(member);
+    }
+
+    // === 헬퍼 메서드들 ===
+    
+    private Member findMemberById(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new ServiceException(ResultCode.MEMBER_NOT_FOUND.code(), "존재하지 않는 회원입니다."));
+    }
+    
+    private void updateProfileUrlIfPresent(Member member, String profileUrl) {
+        if (StringUtils.hasText(profileUrl)) {
+            member.updateProfileUrl(profileUrl.trim());
+        } else if (profileUrl != null) {
+            // 빈 문자열인 경우 null로 설정
+            member.updateProfileUrl(null);
+        }
+        // profileUrl이 null인 경우 아무것도 하지 않음 (기존 값 유지)
     }
 }
