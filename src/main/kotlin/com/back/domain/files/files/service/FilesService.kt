@@ -3,6 +3,7 @@ package com.back.domain.files.files.service
 import com.back.domain.files.files.dto.FileUploadResponseDto
 import com.back.domain.files.files.repository.FilesRepository
 import com.back.domain.post.repository.PostRepository
+import com.back.global.exception.ServiceException
 import com.back.global.rq.Rq
 import com.back.global.rsData.RsData
 import org.slf4j.LoggerFactory
@@ -29,10 +30,10 @@ class FilesService(
     // 파일 업로드 서비스 (동기 호출)
     fun uploadFiles(postId: Long, files: Array<MultipartFile>?): RsData<String> {
         val post = postRepository.findById(postId)
-            .orElseThrow { IllegalArgumentException("존재하지 않는 게시글입니다: $postId") }
+            .orElseThrow { ServiceException("404", "존재하지 않는 게시글입니다: $postId") }
 
-        if (!rq.isLogin() || rq.getMemberId() != post.getMember().getId()) {
-            throw IllegalArgumentException("게시글 작성자만 파일을 업로드할 수 있습니다.")
+        if (!rq.isLogin || rq.memberId != post.getMember().getId()) {
+            throw ServiceException("403", "게시글 작성자만 파일을 업로드할 수 있습니다.")
         }
 
         if (files == null || files.isEmpty()) {
@@ -96,19 +97,19 @@ class FilesService(
     // 파일 개별 삭제 서비스
     fun deleteFile(postId: Long, fileId: Long): RsData<Void?> {
         val file = filesRepository.findById(fileId)
-            .orElseThrow { IllegalArgumentException("파일이 존재하지 않습니다: $fileId") }
+            .orElseThrow { ServiceException("404", "파일이 존재하지 않습니다: $fileId") }
 
         if (file.post.getId() != postId) {
-            throw IllegalArgumentException("해당 게시글에 속하지 않는 파일입니다: $fileId")
+            throw ServiceException("400", "해당 게시글에 속하지 않는 파일입니다: $fileId")
         }
 
-        if (!rq.isLogin()) {
-            throw IllegalArgumentException("로그인 후 이용해 주세요.")
+        if (!rq.isLogin) {
+            throw ServiceException("401", "로그인 후 이용해 주세요.")
         }
 
-        val currentMemberId = rq.getMemberId()
+        val currentMemberId = rq.memberId
         if (file.post.getMember().getId() != currentMemberId) {
-            throw IllegalArgumentException("해당 파일을 삭제할 권한이 없습니다. 현재 사용자 ID: $currentMemberId")
+            throw ServiceException("403", "해당 파일을 삭제할 권한이 없습니다.")
         }
 
         deletePhysicalFileSafely(file.fileUrl)
@@ -120,8 +121,8 @@ class FilesService(
     // =================== 관리자 전용 서비스 구역 ===================
 
     fun adminGetAllFiles(pageable: Pageable): RsData<Page<FileUploadResponseDto>> {
-        if (!rq.isAdmin()) {
-            return RsData("403-1", "관리자 권한이 필요합니다.", null)
+        if (!rq.isAdmin) {
+            throw ServiceException("403", "관리자 권한이 필요합니다.")
         }
 
         val filesPage = filesRepository.findAll(pageable)
@@ -131,23 +132,23 @@ class FilesService(
     }
 
     fun adminGetFileById(fileId: Long): RsData<FileUploadResponseDto> {
-        if (!rq.isAdmin()) {
-            return RsData("403-2", "관리자 권한이 필요합니다.", null)
+        if (!rq.isAdmin) {
+            throw ServiceException("403", "관리자 권한이 필요합니다.")
         }
 
         val file = filesRepository.findById(fileId)
-            .orElseThrow { IllegalArgumentException("파일이 존재하지 않습니다: $fileId") }
+            .orElseThrow { ServiceException("404", "파일이 존재하지 않습니다: $fileId") }
 
         return RsData("200", "파일 조회 성공 (관리자)", FileUploadResponseDto.from(file))
     }
 
     fun adminDeleteFile(fileId: Long): RsData<Void?> {
-        if (!rq.isAdmin()) {
-            return RsData("403-3", "관리자 권한이 필요합니다.", null)
+        if (!rq.isAdmin) {
+            throw ServiceException("403", "관리자 권한이 필요합니다.")
         }
 
         val file = filesRepository.findById(fileId)
-            .orElseThrow { IllegalArgumentException("파일이 존재하지 않습니다. $fileId") }
+            .orElseThrow { ServiceException("404", "파일이 존재하지 않습니다. $fileId") }
 
         deletePhysicalFileSafely(file.fileUrl)
 
