@@ -2,6 +2,7 @@ package com.back.global.rq
 
 import com.back.domain.member.entity.Member
 import com.back.domain.member.entity.Role
+import com.back.global.exception.ServiceException
 import com.back.global.security.auth.MemberDetails
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.context.annotation.Scope
@@ -16,9 +17,9 @@ class Rq(
 ) {
     
     /**
-     * 현재 로그인된 사용자의 Member 객체를 반환
+     * 현재 로그인된 사용자의 Member 객체를 반환 (nullable)
      */
-    val member: Member?
+    private val memberOrNull: Member?
         get() {
             val authentication = SecurityContextHolder.getContext().authentication
             return if (authentication?.principal is MemberDetails) {
@@ -29,22 +30,28 @@ class Rq(
         }
 
     /**
-     * 현재 로그인된 사용자의 ID를 반환
+     * 현재 로그인된 사용자의 Member 객체를 반환 (로그인 필수)
      */
-    val memberId: Long?
-        get() = member?.id
+    val member: Member
+        get() = memberOrNull ?: throw ServiceException("401", "로그인이 필요합니다.")
+
+    /**
+     * 현재 로그인된 사용자의 ID를 반환 (로그인 필수)
+     */
+    val memberId: Long
+        get() = member.id ?: throw ServiceException("401", "로그인이 필요합니다.")
 
     /**
      * 현재 사용자의 로그인 상태 여부를 반환
      */
     val isLogin: Boolean
-        get() = member != null
+        get() = memberOrNull != null
 
     /**
      * 현재 사용자의 역할(Role)이 ADMIN인지 여부를 반환
      */
     val isAdmin: Boolean
-        get() = member?.role == Role.ADMIN
+        get() = memberOrNull?.role == Role.ADMIN
     
     /**
      * HttpServletRequest 객체 반환

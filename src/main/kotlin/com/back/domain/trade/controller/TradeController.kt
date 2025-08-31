@@ -5,7 +5,6 @@ import com.back.domain.trade.dto.TradeDto
 import com.back.domain.trade.dto.TradePageResponse
 import com.back.domain.trade.dto.TradePageResponse.Companion.of
 import com.back.domain.trade.service.TradeService
-import com.back.global.exception.ServiceException
 import com.back.global.rq.Rq
 import com.back.global.rsData.RsData
 import io.swagger.v3.oas.annotations.Operation
@@ -36,9 +35,7 @@ class TradeController (
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "거래 생성")
     fun createTrade(@RequestBody @Valid reqBody: TradeCreateReqBody): RsData<TradeDto> {
-        val memberId = rq.memberId ?: throw ServiceException("401", "로그인이 필요합니다.")
-        
-        val trade = tradeService.createTrade(reqBody.postId, memberId)
+        val trade = tradeService.createTrade(reqBody.postId, rq.memberId)
         return RsData<TradeDto>(
             "201-1",
             "%s번 거래가 생성되었습니다.".format(trade.id),
@@ -49,9 +46,7 @@ class TradeController (
     @GetMapping
     @Operation(summary = "본인 모든 거래 조회")
     fun getMyTrades(pageable: Pageable): RsData<TradePageResponse<TradeDto>> {
-        val member = rq.member ?: throw ServiceException("401", "로그인이 필요합니다.")
-        
-        val trades: Page<TradeDto> = tradeService.getMyTrades(member, pageable)
+        val trades: Page<TradeDto> = tradeService.getMyTrades(rq.member, pageable)
         return RsData<TradePageResponse<TradeDto>>(
             "200-1",
             "거래 목록 조회 성공",
@@ -61,13 +56,6 @@ class TradeController (
 
     @GetMapping("/{id}")
     @Operation(summary = "거래 상세 조회")
-    fun getTradeDetail(@PathVariable @Positive id: Long): RsData<TradeDetailDto> {
-        val member = rq.member ?: throw ServiceException("401", "로그인이 필요합니다.")
-        
-        return RsData<TradeDetailDto>(
-            "200-1", 
-            "거래 상세 조회 성공", 
-            tradeService.getTradeDetail(id, member)
-        )
-    }
+    fun getTradeDetail(@PathVariable @Positive id: Long): RsData<TradeDetailDto> =
+        RsData<TradeDetailDto>("200-1", "거래 상세 조회 성공", tradeService.getTradeDetail(id, rq.member))
 }
