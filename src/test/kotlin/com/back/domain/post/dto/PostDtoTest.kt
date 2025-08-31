@@ -113,16 +113,15 @@ class PostDtosTest {
         ReflectionTestUtils.setField(post, "createdAt", FAKE_TIME)
         ReflectionTestUtils.setField(post, "modifiedAt", FAKE_TIME)
 
-        // 3) Files 생성
-        val file = Files.builder()
-            .post(post)
-            .fileName("file1.png")
-            .fileType("image/png")
-            .fileSize(12345)
-            .fileUrl("https://cdn.example.com/file1.png")
-            .sortOrder(1)
-            .build()
-
+        // 테스트에서 직접 생성자 사용
+        val file = Files(
+            post = post,
+            fileName = "file1.png",
+            fileType = "image/png",
+            fileSize = 12345L,
+            fileUrl = "https://cdn.example.com/file1.png",
+            sortOrder = 1
+        )
         post.postFiles.add(file)
         return Triple(post, member, file)
     }
