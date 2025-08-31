@@ -158,7 +158,7 @@ public class AdminControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.resultCode").value("404-1"))
-                .andExpect(jsonPath("$.msg").value("해당 회원이 존재하지 않습니다."));
+                .andExpect(jsonPath("$.msg").value("존재하지 않는 회원입니다."));
     }
 
     // ========== 특허 관련 테스트 시나리오 ==========
