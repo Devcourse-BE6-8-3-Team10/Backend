@@ -62,8 +62,8 @@ public class AdminService {
 
         // 프로필 이미지 변경 - nullable 필드
         if (request.getProfileUrl() != null) {
-            String profileUrl = request.getProfileUrl().trim().isEmpty() ? null : request.getProfileUrl();
-            member.updateProfileUrl(profileUrl);
+            final String trimmedUrl = request.getProfileUrl().trim();
+            member.updateProfileUrl(trimmedUrl.isEmpty() ? null : trimmedUrl);
         }
 
         memberRepository.save(member);
