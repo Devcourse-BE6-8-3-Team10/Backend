@@ -191,14 +191,14 @@ public class PostDataInitializer {
                         file.getContentType(),
                         "post_" + post.getId()
                 );
-                Files fileEntity = Files.builder()
-                        .post(post)
-                        .fileName(file.getOriginalFilename())
-                        .fileType(file.getContentType())
-                        .fileSize(file.getSize())
-                        .fileUrl(fileUrl)
-                        .sortOrder(i + 1)
-                        .build();
+                Files fileEntity = new Files(
+                        post,
+                        file.getOriginalFilename(),
+                        file.getContentType(),
+                        file.getSize(),
+                        fileUrl,
+                        i + 1
+                );
                 filesRepository.save(fileEntity);
             } catch (Exception e) {
                 log.error("게시물 {}에 이미지 첨부 실패: {}", post.getId(), file.getOriginalFilename(), e);

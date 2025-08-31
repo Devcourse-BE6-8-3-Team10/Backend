@@ -59,7 +59,7 @@ class AsyncFileService(
             .orElseThrow { IllegalArgumentException("비동기 처리 중 게시글을 찾을 수 없습니다: $postId") }
 
         val lastFileResult = filesRepository.findLastByPostIdWithLock(postId, PageRequest.of(0, 1))
-        var sortOrder = if (lastFileResult.isEmpty()) 1 else lastFileResult[0].getSortOrder() + 1
+        var sortOrder = if (lastFileResult.isEmpty()) 1 else lastFileResult[0].sortOrder + 1
 
         log.info("비동기 파일 처리 시작. 게시글 ID: {}, 파일 개수: {}", postId, fileDataList.size)
 

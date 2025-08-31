@@ -1,69 +1,39 @@
-package com.back.domain.files.files.entity;
+package com.back.domain.files.files.entity
 
-import com.back.domain.post.entity.Post;
-import com.back.global.jpa.entity.BaseEntity;
-import jakarta.persistence.*;
-import lombok.*;
+import com.back.domain.post.entity.Post
+import com.back.global.jpa.entity.BaseEntity
+import jakarta.persistence.*
 
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Builder
 @Table(name = "files")
-public class Files extends BaseEntity {
-
-    // 연관 게시글 참조
+class Files(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+    val post: Post,
 
     @Column(nullable = false)
-    private String fileName;
+    val fileName: String,
 
     @Column(nullable = false)
-    private String fileType;
+    val fileType: String,
 
     @Column(nullable = false)
-    private long fileSize;
+    val fileSize: Long,
 
     @Column(nullable = false)
-    private String fileUrl;
+    val fileUrl: String,
 
-    // 정렬 순서
     @Column(nullable = false)
-    private int sortOrder;
+    val sortOrder: Int
+) : BaseEntity() {
 
-    // Kotlin 호환을 위한 Getter 메서드들
-    public Post getPost() {
-        return post;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public String getFileType() {
-        return fileType;
-    }
-
-    public long getFileSize() {
-        return fileSize;
-    }
-
-    public String getFileUrl() {
-        return fileUrl;
-    }
-
-    public int getSortOrder() {
-        return sortOrder;
-    }
-
-    // 생성자 (BaseEntity 상속으로 id, createdAt, modifiedAt 제외)
-    public Files(Post post, String fileName, String fileType, long fileSize, String fileUrl, int sortOrder) {
-        this.post = post;
-        this.fileName = fileName;
-        this.fileType = fileType;
-        this.fileSize = fileSize;
-        this.fileUrl = fileUrl;
-        this.sortOrder = sortOrder;
-    }
+    // JPA를 위한 기본 생성자 (protected)
+    protected constructor() : this(
+        post = Post(), // 임시 객체, 실제로는 JPA가 처리
+        fileName = "",
+        fileType = "",
+        fileSize = 0L,
+        fileUrl = "",
+        sortOrder = 0
+    )
 }

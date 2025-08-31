@@ -98,7 +98,7 @@ class FilesService(
         val file = filesRepository.findById(fileId)
             .orElseThrow { IllegalArgumentException("파일이 존재하지 않습니다: $fileId") }
 
-        if (file.getPost().getId() != postId) {
+        if (file.post.getId() != postId) {
             throw IllegalArgumentException("해당 게시글에 속하지 않는 파일입니다: $fileId")
         }
 
@@ -107,11 +107,11 @@ class FilesService(
         }
 
         val currentMemberId = rq.getMemberId()
-        if (file.getPost().getMember().getId() != currentMemberId) {
+        if (file.post.getMember().getId() != currentMemberId) {
             throw IllegalArgumentException("해당 파일을 삭제할 권한이 없습니다. 현재 사용자 ID: $currentMemberId")
         }
 
-        deletePhysicalFileSafely(file.getFileUrl())
+        deletePhysicalFileSafely(file.fileUrl)
 
         filesRepository.deleteById(fileId)
         return RsData("200", "파일 삭제 성공", null)
@@ -149,7 +149,7 @@ class FilesService(
         val file = filesRepository.findById(fileId)
             .orElseThrow { IllegalArgumentException("파일이 존재하지 않습니다. $fileId") }
 
-        deletePhysicalFileSafely(file.getFileUrl())
+        deletePhysicalFileSafely(file.fileUrl)
 
         filesRepository.deleteById(fileId)
         return RsData("200", "파일 삭제 성공 (관리자)", null)
