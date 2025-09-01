@@ -51,35 +51,42 @@ internal class ChatRepositoryTest {
     fun setUp() {
         // 테스트 사용자들 생성 및 저장
         testUser = memberRepository.save(
-            Member.builder()
-                .email("test@test.com")
-                .password("password")
-                .name("테스트유저")
-                .role(Role.USER)
-                .status(Status.ACTIVE)
-                .build()
+            Member(
+                email = "test@test.com",
+                password = "password",
+                name = "테스트유저",
+                profileUrl = null,
+                role = Role.USER,
+                status = Status.ACTIVE
+            )
         )
 
         postAuthor = memberRepository.save(
-            Member.builder()
-                .email("author@test.com")
-                .password("password")
-                .name("게시글작성자")
-                .role(Role.USER)
-                .status(Status.ACTIVE)
-                .build()
+            Member(
+                email = "author@test.com",
+                password = "password",
+                name = "게시글작성자",
+                profileUrl = null,
+                role = Role.USER,
+                status = Status.ACTIVE
+            )
         )
 
         // 테스트 게시글 생성 및 저장
         testPost = postRepository.save(
-            Post.builder()
-                .member(postAuthor)
-                .title("테스트 게시글")
-                .description("테스트 설명")
-                .category(Post.Category.PRODUCT)
-                .price(100000)
-                .status(Post.Status.SALE)
-                .build()
+            Post(
+                postAuthor,
+                "테스트 게시글",
+                "테스트 설명",
+                Post.Category.PRODUCT,
+                100000,
+                Post.Status.SALE,
+                0,
+                mutableListOf(),
+                null,
+                mutableListOf(),
+                mutableListOf()
+            )
         )
 
         // 테스트 채팅방 생성 및 저장

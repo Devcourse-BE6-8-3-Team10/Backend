@@ -95,8 +95,8 @@ class ChatService(
         val postAuthor = post.getMember()
 
         log.debug("=== 채팅방 생성 시작 ===")
-        log.debug("요청자: {} (ID: {})", requester.getEmail(), requester.getId())
-        log.debug("게시글 작성자: {} (ID: {})", postAuthor.getEmail(), postAuthor.getId())
+        log.debug("요청자: {} (ID: {})", requester.email, requester.getId())
+        log.debug("게시글 작성자: {} (ID: {})", postAuthor.email, postAuthor.getId())
         log.debug("게시글 ID: {}", postId)
 
         findExistingChatRoom(postId, requester.getId(), postAuthor.getId())?.let { existingChatRoomId ->
@@ -206,7 +206,7 @@ class ChatService(
     private fun sendLeaveNotificationToOtherParticipants(chatRoomId: Long, leavingMember: Member) {
         try {
             log.info("=== 채팅방 나가기 알림 전송 시작 ===")
-            log.info("나가는 사용자: {} (ID: {})", leavingMember.getName(), leavingMember.getId())
+            log.info("나가는 사용자: {} (ID: {})", leavingMember.name, leavingMember.getId())
             log.info("채팅방 ID: {}", chatRoomId)
 
             // 나가기 알림 메시지 생성
@@ -215,7 +215,7 @@ class ChatService(
                 chatRoomId = chatRoomId,
                 senderName = "시스템",
                 senderEmail = "system@devteam10.org",
-                content = "${leavingMember.getName()}님이 채팅방을 나갔습니다.",
+                content = "${leavingMember.name}님이 채팅방을 나갔습니다.",
                 messageType = "LEAVE_NOTIFICATION"
             )
 

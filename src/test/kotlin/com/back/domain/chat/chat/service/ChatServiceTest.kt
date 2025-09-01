@@ -69,35 +69,45 @@ internal class ChatServiceTest {
     @BeforeEach
     fun setUp() {
         // 테스트 사용자 생성
-        testUser = Member.builder()
-            .email("test@test.com")
-            .password("password")
-            .name("테스트유저")
-            .role(Role.USER)
-            .status(Status.ACTIVE)
-            .build()
-            .also { ReflectionTestUtils.setField(it, "id", 1L) }
+        testUser = Member(
+            email = "test@test.com",
+            password = "password",
+            name = "테스트유저",
+            profileUrl = null,
+            role = Role.USER,
+            status = Status.ACTIVE
+        ).also {
+            ReflectionTestUtils.setField(it, "id", 1L)
+        }
 
         // 게시글 작성자 생성
-        postAuthor = Member.builder()
-            .email("author@test.com")
-            .password("password")
-            .name("게시글작성자")
-            .role(Role.USER)
-            .status(Status.ACTIVE)
-            .build()
-            .also { ReflectionTestUtils.setField(it, "id", 2L) }
+        postAuthor = Member(
+            email = "author@test.com",
+            password = "password",
+            name = "게시글작성자",
+            profileUrl = null,
+            role = Role.USER,
+            status = Status.ACTIVE
+        ).also {
+            ReflectionTestUtils.setField(it, "id", 2L)
+        }
 
         // 테스트 게시글 생성
-        testPost = Post.builder()
-            .member(postAuthor)
-            .title("테스트 게시글")
-            .description("테스트 설명")
-            .category(Post.Category.PRODUCT)
-            .price(100000)
-            .status(Post.Status.SALE)
-            .build()
-            .also { ReflectionTestUtils.setField(it, "id", 1L) }
+        testPost = Post(
+            postAuthor,
+            "테스트 게시글",
+            "테스트 설명",
+            Post.Category.PRODUCT,
+            100000,
+            Post.Status.SALE,
+            0,                   // favoriteCnt
+            mutableListOf(),     // chatRooms
+            null,                // trade
+            mutableListOf(),     // postFiles
+            mutableListOf()      // favoritePosts
+        ).also {
+            ReflectionTestUtils.setField(it, "id", 1L)
+        }
 
         // 테스트 채팅방 생성
         testChatRoom = ChatRoom(testPost, testUser)

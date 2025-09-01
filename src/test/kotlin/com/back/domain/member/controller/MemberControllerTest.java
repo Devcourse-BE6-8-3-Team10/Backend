@@ -4,6 +4,7 @@ import com.back.domain.auth.dto.request.MemberLoginRequest;
 import com.back.domain.files.files.service.FileStorageService;
 import com.back.domain.member.dto.request.MemberUpdateRequest;
 import com.back.domain.member.entity.Member;
+import com.back.domain.member.entity.Role;
 import com.back.domain.member.entity.Status;
 import com.back.domain.member.repository.MemberRepository;
 import com.back.global.rsData.RsData;
@@ -62,11 +63,11 @@ public class MemberControllerTest {
         // given - 테스트용 회원 저장
         String email = "testUser1@user.com";
         String password = "user1234!";
-        Member member = Member.builder()
-                .email(email)
-                .password(passwordEncoder.encode(password))
-                .name("홍길동")
-                .build();
+        Member member = new Member(
+                email,
+                passwordEncoder.encode(password),
+                "홍길동"
+        );
         memberRepository.save(member);
 
         // 로그인 요청
@@ -111,12 +112,14 @@ public class MemberControllerTest {
     void myPage_fail_deleted_user() throws Exception {
         // given
         if (memberRepository.findByEmail("deleted@user.com").isEmpty()) {
-            Member member = Member.builder()
-                    .email("deleted@user.com")
-                    .password(passwordEncoder.encode("user1234!"))
-                    .name("탈퇴자")
-                    .status(Status.DELETED)
-                    .build();
+            Member member = new Member(
+                    "deleted@user.com",
+                    passwordEncoder.encode("user1234!"),
+                    "탈퇴자",
+                    null,
+                    Role.USER,
+                    Status.DELETED
+            );
             memberRepository.save(member);
         }
 
@@ -232,13 +235,14 @@ public class MemberControllerTest {
     @WithUserDetails(value = "user1@user.com")
     void getOtherMemberProfile_success() throws Exception {
         // given
-        Member otherMember = memberRepository.save(Member.builder()
-                .email("other@user.com")
-                .password(passwordEncoder.encode("user1234!"))
-                .name("다른유저")
-                .profileUrl("https://example.com/profile.jpg")
-                .status(Status.ACTIVE)
-                .build());
+        Member otherMember = memberRepository.save(
+                new Member(
+                        "other@user.com",
+                        passwordEncoder.encode("user1234!"),
+                        "다른유저",
+                        "https://example.com/profile.jpg"
+                )
+        );
 
         // when & then
         mockMvc.perform(get("/api/members/" + otherMember.getId()))

@@ -4,7 +4,6 @@ import com.back.domain.files.files.entity.Files;
 import com.back.domain.files.files.repository.FilesRepository;
 import com.back.domain.files.files.service.FileStorageService;
 import com.back.domain.member.entity.Member;
-import com.back.domain.member.entity.Role;
 import com.back.domain.member.repository.MemberRepository;
 import com.back.domain.post.entity.Post;
 import com.back.domain.post.repository.PostRepository;
@@ -19,11 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -105,14 +100,22 @@ public class PostDataInitializer {
         log.info("===== 게시글 테스트 데이터 생성 시작 =====");
 
         Member user1 = memberRepository.findByEmail("test1@user.com")
-                .orElseGet(() -> memberRepository.save(Member.builder()
-                        .email("test1@user.com").password(passwordEncoder.encode("1234"))
-                        .name("김혁신").role(Role.USER).build()));
+                .orElseGet(() -> memberRepository.save(
+                        new Member(
+                                "test1@user.com",
+                                passwordEncoder.encode("1234"),
+                                "김혁신"
+                        )
+                ));
 
         Member user2 = memberRepository.findByEmail("test2@user.com")
-                .orElseGet(() -> memberRepository.save(Member.builder()
-                        .email("test2@user.com").password(passwordEncoder.encode("1234"))
-                        .name("박기술").role(Role.USER).build()));
+                .orElseGet(() -> memberRepository.save(
+                        new Member(
+                                "test2@user.com",
+                                passwordEncoder.encode("1234"),
+                                "박기술"
+                        )
+                ));
 
         if (postRepository.count() > 0) {
             log.info("게시글 데이터가 이미 존재합니다. 초기화를 건너뜁니다.");
@@ -123,13 +126,13 @@ public class PostDataInitializer {
 
         // 샘플 데이터 리스트 생성
         List<PostData> postDataList = List.of(
-            new PostData(user1, "AI 기반 음성인식 알고리즘 특허", "혁신적인 음성인식 기술로, 다양한 언어를 실시간으로 정확하게 인식하고 텍스트로 변환합니다.", Post.Category.PRODUCT, 15000000),
-            new PostData(user2, "차세대 고효율 배터리 기술", "기존 리튬이온 배터리보다 2배 이상 높은 에너지 밀도를 자랑하는 차세대 배터리 기술입니다.", Post.Category.METHOD, 25000000),
-            new PostData(user1, "원격 의료 진단 시스템 특허", "AI를 활용하여 환자의 상태를 원격으로 진단하고, 맞춤형 의료 서비스를 제공하는 혁신적인 시스템입니다.", Post.Category.USE, 18500000),
-            new PostData(user2, "친환경 생분해성 플라스틱 대체 기술", "옥수수 전분을 원료로 하여 6개월 내에 자연 분해되는 친환경 플라스틱 대체 기술에 대한 특허입니다.", Post.Category.PRODUCT, 12000000),
-            new PostData(user1, "자율주행 차량용 센서 융합 기술", "라이다, 레이더, 카메라 등 다양한 센서 데이터를 융합하여 악천후 속에서도 안정적인 자율주행을 지원합니다.", Post.Category.METHOD, 30000000),
-            new PostData(user2, "스마트폰 기반 생체 보안 인증", "사용자의 홍채와 지문을 동시에 인식하여, 현존 최고 수준의 보안을 제공하는 스마트폰 인증 기술입니다.", Post.Category.TRADEMARK, 8900000),
-            new PostData(user1, "고효율 태양광 패널 제조 공법", "특수 나노 코팅 기술을 적용하여, 기존 대비 30% 이상 발전 효율을 높인 태양광 패널 제조 공법입니다.", Post.Category.METHOD, 22000000)
+                new PostData(user1, "AI 기반 음성인식 알고리즘 특허", "혁신적인 음성인식 기술로, 다양한 언어를 실시간으로 정확하게 인식하고 텍스트로 변환합니다.", Post.Category.PRODUCT, 15000000),
+                new PostData(user2, "차세대 고효율 배터리 기술", "기존 리튬이온 배터리보다 2배 이상 높은 에너지 밀도를 자랑하는 차세대 배터리 기술입니다.", Post.Category.METHOD, 25000000),
+                new PostData(user1, "원격 의료 진단 시스템 특허", "AI를 활용하여 환자의 상태를 원격으로 진단하고, 맞춤형 의료 서비스를 제공하는 혁신적인 시스템입니다.", Post.Category.USE, 18500000),
+                new PostData(user2, "친환경 생분해성 플라스틱 대체 기술", "옥수수 전분을 원료로 하여 6개월 내에 자연 분해되는 친환경 플라스틱 대체 기술에 대한 특허입니다.", Post.Category.PRODUCT, 12000000),
+                new PostData(user1, "자율주행 차량용 센서 융합 기술", "라이다, 레이더, 카메라 등 다양한 센서 데이터를 융합하여 악천후 속에서도 안정적인 자율주행을 지원합니다.", Post.Category.METHOD, 30000000),
+                new PostData(user2, "스마트폰 기반 생체 보안 인증", "사용자의 홍채와 지문을 동시에 인식하여, 현존 최고 수준의 보안을 제공하는 스마트폰 인증 기술입니다.", Post.Category.TRADEMARK, 8900000),
+                new PostData(user1, "고효율 태양광 패널 제조 공법", "특수 나노 코팅 기술을 적용하여, 기존 대비 30% 이상 발전 효율을 높인 태양광 패널 제조 공법입니다.", Post.Category.METHOD, 22000000)
         );
 
         for (PostData data : postDataList) {
