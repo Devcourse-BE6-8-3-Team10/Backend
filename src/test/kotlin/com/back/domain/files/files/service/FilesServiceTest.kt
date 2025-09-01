@@ -12,6 +12,18 @@ import com.back.global.rq.Rq
 import com.back.util.MockitoKotlinUtils.any
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import com.back.domain.files.files.dto.FileUploadResponseDto
+import com.back.domain.files.files.entity.Files
+import com.back.domain.files.files.repository.FilesRepository
+import com.back.domain.post.entity.Post
+import com.back.domain.post.repository.PostRepository
+import com.back.domain.member.entity.Member
+import com.back.domain.member.entity.Role
+import com.back.domain.member.entity.Status
+import com.back.global.exception.ServiceException
+import com.back.global.rq.Rq
+import com.back.util.MockitoKotlinUtils.any
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -27,6 +39,14 @@ import org.mockito.Mockito.verify
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.never
+import org.mockito.Mockito.doThrow
+import org.mockito.junit.jupiter.MockitoExtension
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.multipart.MultipartFile
@@ -94,18 +114,7 @@ internal class FilesServiceTest {
             role = Role.ADMIN,
             status = Status.ACTIVE
         )
-        ReflectionTestUtils.setField(adminMember, "id", 3L)
-
-        // 테스트 게시글 생성
-        testPost = Post.builder()
-            .member(testMember)
-            .title("테스트 게시글")
-            .description("테스트 설명")
-            .category(Post.Category.PRODUCT)
-            .price(100000)
-            .status(Post.Status.SALE)
-            .build()
-        ReflectionTestUtils.setField(testPost, "id", 1L)
+        ReflectionTestUtils.setField(testMember, "id", 1L)
 
         // 테스트 파일 생성
         testFile = Files(
