@@ -7,8 +7,8 @@ import jakarta.persistence.*
 
 @Entity
 class Trade(
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "post_id", nullable = false, unique = true)
     var post: Post,
 
     @ManyToOne(fetch = FetchType.LAZY)
