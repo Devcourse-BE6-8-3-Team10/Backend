@@ -150,7 +150,7 @@ public class AuthControllerTest {
                 new TypeReference<RsData<Map<String, Object>>>() {
                 });
 
-        String accessToken = rsData.data().get("accessToken").toString();
+        String accessToken = rsData.data.get("accessToken").toString();
 
         // 보호된 API 접근
         mockMvc.perform(get("/api/auth/me")
@@ -177,7 +177,7 @@ public class AuthControllerTest {
                 loginResponseJson, new TypeReference<RsData<Map<String, Object>>>() {
                 });
 
-        String accessToken = loginRsData.data().get("accessToken").toString();
+        String accessToken = loginRsData.data.get("accessToken").toString();
 
         // 로그인 직후 refreshToken이 설정되었는지 확인
         Member memberAfterLogin = memberRepository.findByEmail("user1@user.com").orElseThrow();
@@ -195,8 +195,8 @@ public class AuthControllerTest {
                 });
 
         // then - 로그아웃 응답 검증
-        assertThat(logoutRsData.resultCode()).isEqualTo(ResultCode.SUCCESS.code());
-        assertThat(logoutRsData.msg()).isEqualTo("로그아웃 성공");
+        assertThat(logoutRsData.resultCode).isEqualTo(ResultCode.SUCCESS.code());
+        assertThat(logoutRsData.msg).isEqualTo("로그아웃 성공");
 
         // 로그아웃 후 refreshToken 제거되었는지 확인
         Member member = memberRepository.findByEmail("user1@user.com").orElseThrow();

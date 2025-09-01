@@ -7,5 +7,5 @@ class ServiceException(
     val msg: String
 ) : RuntimeException("$resultCode : $msg") {
 
-    val rsData get() = RsData(resultCode, msg, null)
+    val rsData: RsData<Nothing?> get() = RsData(resultCode, msg, null)
 }

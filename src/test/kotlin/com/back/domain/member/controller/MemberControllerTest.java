@@ -82,7 +82,7 @@ public class MemberControllerTest {
         String responseJson = loginResult.getResponse().getContentAsString();
         RsData<Map<String, Object>> rsData = objectMapper.readValue(responseJson,
                 new TypeReference<RsData<Map<String, Object>>>() {});
-        String accessToken = rsData.data().get("accessToken").toString();
+        String accessToken = rsData.data.get("accessToken").toString();
 
         // when - 탈퇴 요청
         mockMvc.perform(delete("/api/members/me")
