@@ -36,12 +36,13 @@ public class DevDataInitializer implements ApplicationRunner {
     @Transactional
     public void initAdmin() {
         if (!memberRepository.existsByEmail("admin@admin.com")) {
-            Member admin = Member.builder()
-                    .email("admin@admin.com")
-                    .password(passwordEncoder.encode("admin1234!"))
-                    .name("관리자")
-                    .role(Role.ADMIN) // enum 또는 String 값 사용
-                    .build();
+            Member admin = new Member(
+                    "admin@admin.com",
+                    passwordEncoder.encode("admin1234!"),
+                    "관리자",
+                    null,
+                    Role.ADMIN
+            );
             memberRepository.save(admin);
             log.info("관리자 계정이 생성되었습니다.");
         }
@@ -56,12 +57,13 @@ public class DevDataInitializer implements ApplicationRunner {
 
     private void createUserIfNotExists(String email, String name) {
         if (!memberRepository.existsByEmail(email)) {
-            Member user = Member.builder()
-                    .email(email)
-                    .password(passwordEncoder.encode("user1234!"))
-                    .name(name)
-                    .role(Role.USER)
-                    .build();
+            Member user = new Member(
+                    email,
+                    passwordEncoder.encode("user1234!"),
+                    name,
+                    null,
+                    Role.USER
+            );
             memberRepository.save(user);
             log.info("{} 계정이 생성되었습니다.", name);
         }

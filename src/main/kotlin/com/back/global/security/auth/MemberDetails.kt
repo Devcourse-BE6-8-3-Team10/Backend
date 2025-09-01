@@ -9,23 +9,23 @@ import org.springframework.security.core.userdetails.UserDetails
 class MemberDetails(val member: Member) : UserDetails {
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-        return mutableListOf(SimpleGrantedAuthority("ROLE_${member.getRole()}"))
+        return mutableListOf(SimpleGrantedAuthority("ROLE_${member.role}"))
     }
 
     override fun getPassword(): String {
-        return member.getPassword()
+        return member.password
     }
 
     override fun getUsername(): String {
-        return member.getEmail()
+        return member.email
     }
 
     override fun isAccountNonExpired(): Boolean {
-        return member.getDeletedAt() == null
+        return member.deletedAt == null
     }
 
     override fun isAccountNonLocked(): Boolean {
-        return member.getStatus() != Status.BLOCKED
+        return member.status != Status.BLOCKED
     }
 
     override fun isCredentialsNonExpired(): Boolean {
@@ -33,6 +33,6 @@ class MemberDetails(val member: Member) : UserDetails {
     }
 
     override fun isEnabled(): Boolean {
-        return member.getStatus() == Status.ACTIVE
+        return member.status == Status.ACTIVE
     }
 }

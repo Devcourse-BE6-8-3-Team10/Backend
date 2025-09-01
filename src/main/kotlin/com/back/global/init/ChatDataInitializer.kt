@@ -42,7 +42,8 @@ class ChatDataInitializer(
 
         allMembers.forEach { member ->
             log.info("Member ID: {}, Email: {}, Name: {}",
-                member.getId(), member.getEmail(), member.getName())
+                member.getId(), member.email, member.name
+            )
         }
 
         if (allMembers.isNotEmpty()) {

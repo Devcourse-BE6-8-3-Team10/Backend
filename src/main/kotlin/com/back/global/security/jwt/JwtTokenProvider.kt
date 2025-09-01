@@ -28,9 +28,9 @@ class JwtTokenProvider(
     fun generateAccessToken(member: Member): String {
         val now = Date()
         return Jwts.builder()
-            .setSubject(member.getEmail())
+            .setSubject(member.email)
             .claim("id", member.getId())
-            .claim("role", member.getRole().name)
+            .claim("role", member.role.name)
             .setIssuedAt(now)
             .setExpiration(Date(now.time + accessTokenValidity))
             .signWith(key, SignatureAlgorithm.HS256)
@@ -41,7 +41,7 @@ class JwtTokenProvider(
     fun generateRefreshToken(member: Member): String {
         val now = Date()
         return Jwts.builder()
-            .setSubject(member.getEmail())
+            .setSubject(member.email)
             .setIssuedAt(now)
             .setExpiration(Date(now.time + refreshTokenValidity))
             .signWith(key, SignatureAlgorithm.HS256)
