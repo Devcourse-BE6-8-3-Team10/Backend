@@ -165,12 +165,6 @@ public class TestInitData {
     }
 
     private Trade createTrade(Post post, Member buyer, Member seller) {
-        return Trade.builder()
-                .post(post)
-                .buyer(buyer)
-                .seller(seller)
-                .price(post.getPrice())
-                .status(TradeStatus.COMPLETED)
-                .build();
+        return new Trade(post, seller, buyer, post.getPrice(), TradeStatus.COMPLETED);
     }
 }
