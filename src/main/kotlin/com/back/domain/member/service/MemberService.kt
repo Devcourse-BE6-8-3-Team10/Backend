@@ -10,9 +10,11 @@ import com.back.domain.member.entity.Member
 import com.back.domain.member.repository.MemberRepository
 import com.back.global.exception.ServiceException
 import com.back.global.rsData.ResultCode
+import org.slf4j.LoggerFactory
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.util.StringUtils
 import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
 
@@ -23,6 +25,9 @@ class MemberService(
     private val passwordEncoder: PasswordEncoder,
     private val fileStorageService: FileStorageService
 ) {
+    companion object {
+        private val log = LoggerFactory.getLogger(MemberService::class.java)
+    }
 
     // 회원 가입
     @Transactional
@@ -137,14 +142,8 @@ class MemberService(
                 )
             }
 
-        // 기존 프로필 이미지가 있다면 삭제
-        member.profileUrl?.takeIf { it.isNotEmpty() }?.let { oldProfileUrl ->
-            try {
-                fileStorageService.deletePhysicalFile(oldProfileUrl)
-            } catch (e: Exception) {
-                // 기존 프로필 이미지 삭제 실패 시 로그 (필요시 로깅 라이브러리 사용)
-            }
-        }
+        // 기존 프로필 URL 보관 (신규 저장 성공 후 삭제)
+        val oldProfileUrl = member.profileUrl
 
         return try {
             val fileContent = file.bytes
@@ -153,20 +152,42 @@ class MemberService(
             val contentType = file.contentType
                 ?: throw ServiceException(ResultCode.BAD_REQUEST.code(), "파일 타입을 확인할 수 없습니다.")
 
+            // 파일 검증
+            val allowed = setOf("image/jpeg", "image/png", "image/gif", "image/webp")
+            if (contentType !in allowed) {
+                throw ServiceException(ResultCode.BAD_REQUEST.code(), "이미지 파일만 업로드 가능합니다.")
+            }
+            val maxSize = 5 * 1024 * 1024L // 5MB
+            if (file.size > maxSize) {
+                throw ServiceException(ResultCode.BAD_REQUEST.code(), "파일 크기가 5MB를 초과합니다.")
+            }
+            val cleanedFilename = StringUtils.cleanPath(originalFilename)
+
             // MemberService에서 파일을 저장할 때, 'profile/{memberId}'를 하위 폴더로 지정
             val newProfileUrl = fileStorageService.storeFile(
                 fileContent,
-                originalFilename,
+                cleanedFilename,
                 contentType,
                 "profile/$memberId"
             )
 
             member.updateProfileUrl(newProfileUrl)
             memberRepository.save(member)
+
+            // 신규 저장 성공 후 구파일 삭제 (실패해도 작업 계속)
+            oldProfileUrl?.takeIf { it.isNotBlank() }?.let {
+                try {
+                    fileStorageService.deletePhysicalFile(it)
+                } catch (e: Exception) {
+                    log.warn("Old profile deletion failed. memberId={}, url={}", memberId, it, e)
+                }
+            }
             newProfileUrl
         } catch (e: IOException) {
+            log.error("IOException while processing profile image. memberId={}", memberId, e)
             throw ServiceException(ResultCode.SERVER_ERROR.code(), "프로필 이미지 처리 중 오류가 발생했습니다.")
         } catch (e: Exception) {
+            log.error("Unexpected error during profile upload. memberId={}", memberId, e)
             throw ServiceException(ResultCode.FILE_UPLOAD_FAIL.code(), "프로필 이미지 업로드에 실패했습니다.")
         }
     }
