@@ -79,13 +79,14 @@ public class AuthControllerTest {
     @DisplayName("회원가입 실패 - 이메일 중복")
     void signup_email_duplicate() throws Exception {
         // given
-        Member existing = Member.builder()
-                .email("test@example.com")
-                .password(passwordEncoder.encode("somepass!"))
-                .name("기존유저")
-                .role(Role.USER)
-                .status(Status.ACTIVE)
-                .build();
+        Member existing = new Member(
+                "test@example.com",
+                passwordEncoder.encode("somepass!"),
+                "기존유저",
+                null,
+                Role.USER,
+                Status.ACTIVE
+        );
         memberRepository.save(existing);
 
         MemberSignupRequest request = new MemberSignupRequest("test@example.com", "anotherPass123!", "홍길동");
@@ -146,7 +147,8 @@ public class AuthControllerTest {
         String responseJson = loginResult.getResponse().getContentAsString();
 
         RsData<Map<String, Object>> rsData = objectMapper.readValue(responseJson,
-                new TypeReference<RsData<Map<String, Object>>>() {});
+                new TypeReference<RsData<Map<String, Object>>>() {
+                });
 
         String accessToken = rsData.data().get("accessToken").toString();
 
@@ -172,7 +174,8 @@ public class AuthControllerTest {
         String loginResponseJson = loginResult.getResponse().getContentAsString();
 
         RsData<Map<String, Object>> loginRsData = objectMapper.readValue(
-                loginResponseJson, new TypeReference<RsData<Map<String, Object>>>() {});
+                loginResponseJson, new TypeReference<RsData<Map<String, Object>>>() {
+                });
 
         String accessToken = loginRsData.data().get("accessToken").toString();
 
@@ -188,7 +191,8 @@ public class AuthControllerTest {
 
         String logoutResponseJson = logoutResult.getResponse().getContentAsString();
         RsData<Void> logoutRsData = objectMapper.readValue(
-                logoutResponseJson, new TypeReference<RsData<Void>>() {});
+                logoutResponseJson, new TypeReference<RsData<Void>>() {
+                });
 
         // then - 로그아웃 응답 검증
         assertThat(logoutRsData.resultCode()).isEqualTo(ResultCode.SUCCESS.code());
@@ -342,12 +346,14 @@ public class AuthControllerTest {
         // given
         String email = "deleted@user.com";
         String password = "user1234!";
-        Member deletedMember = Member.builder()
-                .email(email)
-                .password(passwordEncoder.encode(password))
-                .name("탈퇴자")
-                .status(Status.DELETED)
-                .build();
+        Member deletedMember = new Member(
+                email,
+                passwordEncoder.encode(password),
+                "탈퇴자",
+                null,
+                Role.USER,
+                Status.DELETED
+        );
         memberRepository.save(deletedMember);
 
         MemberLoginRequest request = new MemberLoginRequest(email, password);

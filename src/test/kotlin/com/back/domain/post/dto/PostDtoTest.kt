@@ -2,6 +2,8 @@ package com.back.domain.post.dto
 
 import com.back.domain.files.files.entity.Files
 import com.back.domain.member.entity.Member
+import com.back.domain.member.entity.Role
+import com.back.domain.member.entity.Status
 import com.back.domain.post.entity.Post
 import jakarta.validation.Validation
 import org.assertj.core.api.Assertions.assertThat
@@ -91,22 +93,31 @@ class PostDtosTest {
     // -----------------------------
     private fun makePostWithMemberAndFile(): Triple<Post, Member, Files> {
         // 1) Member는 빌더로 생성
-        val member = Member.builder()
-            .email("test@example.com")
-            .password("encoded")
-            .name("홍길동")
-            .build()
-        ReflectionTestUtils.setField(member, "id", 100L)
+        val member = Member(
+            "test@example.com",
+            "encoded",
+            "홍길동",
+            null,
+            Role.USER,
+            Status.ACTIVE
+        ).also {
+            ReflectionTestUtils.setField(it, "id", 100L)
+        }
 
         // 2) Post 생성
-        val post = Post.builder()
-            .member(member)
-            .title("제목")
-            .description("내용")
-            .category(Post.Category.PRODUCT)
-            .price(10_000)
-            .status(Post.Status.SALE)
-            .build()
+        val post = Post(
+            member,
+            "제목",
+            "내용",
+            Post.Category.PRODUCT,
+            10_000,
+            Post.Status.SALE,
+            0,
+            mutableListOf(),
+            null,
+            mutableListOf(),
+            mutableListOf()
+        )
 
         ReflectionTestUtils.setField(post, "id", 1L)
         ReflectionTestUtils.setField(post, "favoriteCnt", 3)

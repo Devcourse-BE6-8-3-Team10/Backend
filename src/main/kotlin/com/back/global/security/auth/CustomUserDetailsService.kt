@@ -33,7 +33,7 @@ class CustomUserDetailsService(private val memberRepository: MemberRepository) :
 
     // 회원 상태 검증 메서드
     private fun validateMemberStatus(member: Member) {
-        when (member.getStatus()) {
+        when (member.status) {
             Status.DELETED -> throw ResultCode.WITHDRAWN_MEMBER.toServiceException()
             Status.BLOCKED -> throw ResultCode.BLOCKED_MEMBER.toServiceException()
             Status.ACTIVE -> {} // 정상 상태 - 인증 진행

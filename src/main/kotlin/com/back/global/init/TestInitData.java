@@ -51,12 +51,13 @@ public class TestInitData {
     public void work1() {
         // 관리자 계정 직접 생성
         if (memberRepository.findByEmail("admin@admin.com").isEmpty()) {
-            Member admin = Member.builder()
-                    .email("admin@admin.com")
-                    .password(passwordEncoder.encode("admin1234!"))
-                    .name("관리자")
-                    .role(Role.ADMIN)
-                    .build();
+            Member admin = new Member(
+                    "admin@admin.com",
+                    passwordEncoder.encode("admin1234!"),
+                    "관리자",
+                    null,
+                    Role.ADMIN
+            );
             memberRepository.save(admin);
         }
 
