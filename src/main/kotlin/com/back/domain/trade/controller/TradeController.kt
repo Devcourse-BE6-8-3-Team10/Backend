@@ -35,7 +35,7 @@ class TradeController (
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "거래 생성")
     fun createTrade(@RequestBody @Valid reqBody: TradeCreateReqBody): RsData<TradeDto> {
-        val trade = tradeService.createTrade(reqBody.postId, this.rq.member.id)
+        val trade = tradeService.createTrade(reqBody.postId, rq.memberId)
         return RsData<TradeDto>(
             "201-1",
             "%s번 거래가 생성되었습니다.".format(trade.id),
@@ -46,8 +46,7 @@ class TradeController (
     @GetMapping
     @Operation(summary = "본인 모든 거래 조회")
     fun getMyTrades(pageable: Pageable): RsData<TradePageResponse<TradeDto>> {
-        val member = rq.member
-        val trades: Page<TradeDto> = tradeService.getMyTrades(member, pageable)
+        val trades: Page<TradeDto> = tradeService.getMyTrades(rq.member, pageable)
         return RsData<TradePageResponse<TradeDto>>(
             "200-1",
             "거래 목록 조회 성공",
@@ -59,5 +58,4 @@ class TradeController (
     @Operation(summary = "거래 상세 조회")
     fun getTradeDetail(@PathVariable @Positive id: Long): RsData<TradeDetailDto> =
         RsData<TradeDetailDto>("200-1", "거래 상세 조회 성공", tradeService.getTradeDetail(id, rq.member))
-
 }
