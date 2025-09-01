@@ -71,8 +71,11 @@ class AuthService(
         val refreshToken = request.refreshToken
 
         // 1. 토큰 유효성 확인
-        require(jwtTokenProvider.validateToken(refreshToken)) {
-            throw ServiceException(ResultCode.INVALID_TOKEN.code(), "유효하지 않은 리프레시 토큰입니다.")
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw ServiceException(
+                ResultCode.INVALID_TOKEN.code(),
+                "유효하지 않은 리프레시 토큰입니다."
+            )
         }
 
         // 2. 이메일 추출 및 사용자 조회
