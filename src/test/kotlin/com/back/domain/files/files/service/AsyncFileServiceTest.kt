@@ -48,13 +48,14 @@ internal class AsyncFileServiceTest {
     @BeforeEach
     fun setUp() {
         // 테스트 멤버 생성
-        testMember = Member.builder()
-            .email("test@test.com")
-            .password("password")
-            .name("테스트사용자")
-            .role(Role.USER)
-            .status(Status.ACTIVE)
-            .build()
+        testMember = Member(
+            email = "test@test.com",
+            password = "password",
+            name = "테스트사용자",
+            profileUrl = null,
+            role = Role.USER,
+            status = Status.ACTIVE
+        )
         ReflectionTestUtils.setField(testMember, "id", 1L)
 
         // 테스트 게시글 생성
