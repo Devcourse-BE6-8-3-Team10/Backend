@@ -94,7 +94,18 @@ internal class FilesServiceTest {
             role = Role.ADMIN,
             status = Status.ACTIVE
         )
-        ReflectionTestUtils.setField(testMember, "id", 1L)
+        ReflectionTestUtils.setField(adminMember, "id", 3L)
+
+        // 테스트 게시글 생성
+        testPost = Post.builder()
+            .member(testMember)
+            .title("테스트 게시글")
+            .description("테스트 설명")
+            .category(Post.Category.PRODUCT)
+            .price(100000)
+            .status(Post.Status.SALE)
+            .build()
+        ReflectionTestUtils.setField(testPost, "id", 1L)
 
         // 테스트 파일 생성
         testFile = Files(
