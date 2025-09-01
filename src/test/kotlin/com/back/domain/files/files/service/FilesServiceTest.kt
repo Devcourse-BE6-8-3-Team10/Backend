@@ -1,5 +1,17 @@
 package com.back.domain.files.files.service
 
+import com.back.domain.files.files.entity.Files
+import com.back.domain.files.files.repository.FilesRepository
+import com.back.domain.member.entity.Member
+import com.back.domain.member.entity.Role
+import com.back.domain.member.entity.Status
+import com.back.domain.post.entity.Post
+import com.back.domain.post.repository.PostRepository
+import com.back.global.exception.ServiceException
+import com.back.global.rq.Rq
+import com.back.util.MockitoKotlinUtils.any
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import com.back.domain.files.files.dto.FileUploadResponseDto
 import com.back.domain.files.files.entity.Files
 import com.back.domain.files.files.repository.FilesRepository
@@ -17,12 +29,16 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.BDDMockito.given
 import org.mockito.InjectMocks
 import org.mockito.Mock
+import org.mockito.Mockito.doThrow
+import org.mockito.Mockito.verify
+import org.mockito.junit.jupiter.MockitoExtension
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.never
 import org.mockito.Mockito.doThrow
@@ -68,45 +84,37 @@ internal class FilesServiceTest {
     @BeforeEach
     fun setUp() {
         // 테스트 멤버 생성
-        testMember = Member.builder()
-            .email("test@test.com")
-            .password("password")
-            .name("테스트사용자")
-            .role(Role.USER)
-            .status(Status.ACTIVE)
-            .build()
+        testMember = Member(
+            email = "test@test.com",
+            password = "password",
+            name = "테스트사용자",
+            profileUrl = null,
+            role = Role.USER,
+            status = Status.ACTIVE
+        )
         ReflectionTestUtils.setField(testMember, "id", 1L)
 
         // 다른 멤버 생성
-        otherMember = Member.builder()
-            .email("other@test.com")
-            .password("password")
-            .name("다른사용자")
-            .role(Role.USER)
-            .status(Status.ACTIVE)
-            .build()
+        otherMember = Member(
+            email = "other@test.com",
+            password = "password",
+            name = "다른사용자",
+            profileUrl = null,
+            role = Role.USER,
+            status = Status.ACTIVE
+        )
         ReflectionTestUtils.setField(otherMember, "id", 2L)
 
         // 관리자 멤버 생성
-        adminMember = Member.builder()
-            .email("admin@test.com")
-            .password("password")
-            .name("관리자")
-            .role(Role.ADMIN)
-            .status(Status.ACTIVE)
-            .build()
-        ReflectionTestUtils.setField(adminMember, "id", 3L)
-
-        // 테스트 게시글 생성
-        testPost = Post.builder()
-            .member(testMember)
-            .title("테스트 게시글")
-            .description("테스트 설명")
-            .category(Post.Category.PRODUCT)
-            .price(100000)
-            .status(Post.Status.SALE)
-            .build()
-        ReflectionTestUtils.setField(testPost, "id", 1L)
+        adminMember = Member(
+            email = "admin@test.com",
+            password = "password",
+            name = "관리자",
+            profileUrl = null,
+            role = Role.ADMIN,
+            status = Status.ACTIVE
+        )
+        ReflectionTestUtils.setField(testMember, "id", 1L)
 
         // 테스트 파일 생성
         testFile = Files(
