@@ -32,6 +32,7 @@ dependencies {
     // Kotlin 관련 의존성 추가
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
