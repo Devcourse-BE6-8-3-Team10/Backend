@@ -111,12 +111,12 @@ class PostDtosTest {
             "내용",
             Post.Category.PRODUCT,
             10_000,
-            Post.Status.SALE,
-            0,
-            mutableListOf(),
-            null,
-            mutableListOf(),
-            mutableListOf()
+            Post.Status.SALE
+//            0,
+//            mutableListOf(),
+//            null,
+//            mutableListOf(),
+//            mutableListOf()
         )
 
         ReflectionTestUtils.setField(post, "id", 1L)

@@ -8,19 +8,12 @@ import com.back.domain.trade.entity.Trade;
 import com.back.global.exception.ServiceException;
 import com.back.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Post extends BaseEntity {
 
     // Member ID(외래키)
@@ -64,6 +57,21 @@ public class Post extends BaseEntity {
     // 게시글 1 ↔ 찜 N
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FavoritePost> favoritePosts = new ArrayList<>();
+
+    protected Post(){
+    }
+
+    // 편의 생성자 (빌더 대체)
+    public Post(Member member, String title, String description,
+                Category category, Integer price, Status status) {
+        this.member = member;
+        this.title = title;
+        this.description = description;
+        this.category = category;
+        this.price = price;
+        this.status = status;
+        this.favoriteCnt = 0;
+    }
 
     public Member getMember() {
         return member;
@@ -176,4 +184,14 @@ public class Post extends BaseEntity {
         this.status = status;
     }
 
+    public static Post stub() {
+        return new Post(
+                new Member("stub", "stub", "stub", ""), // Member 엔티티에 맞는 생성자가 있어야 함
+                "stub",
+                "stub",
+                Category.ETC,
+                0,
+                Status.SALE
+        );
+    }
 }

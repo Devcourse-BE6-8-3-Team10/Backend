@@ -1,17 +1,17 @@
 package com.back.domain.files.files.repository
 
 import com.back.domain.files.files.entity.Files
-import com.back.domain.post.entity.Post
-import com.back.domain.post.repository.PostRepository
 import com.back.domain.member.entity.Member
 import com.back.domain.member.entity.Role
 import com.back.domain.member.entity.Status
 import com.back.domain.member.repository.MemberRepository
+import com.back.domain.post.entity.Post
+import com.back.domain.post.repository.PostRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
@@ -57,14 +57,14 @@ internal class FilesRepositoryTest {
 
         // 테스트 게시글 생성 및 저장
         testPost = postRepository.save(
-            Post.builder()
-                .member(testMember)
-                .title("테스트 게시글")
-                .description("테스트 내용")
-                .category(Post.Category.PRODUCT)
-                .price(50000)
-                .status(Post.Status.SALE)
-                .build()
+            Post(
+                testMember,
+                "테스트 게시글",
+                "테스트 내용",
+                Post.Category.PRODUCT,
+                50000,
+                Post.Status.SALE
+            )
         )
 
         // 테스트 파일들 생성 및 저장 (sortOrder 순서대로)

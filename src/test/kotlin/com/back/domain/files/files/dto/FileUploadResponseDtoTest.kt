@@ -31,14 +31,14 @@ class FileUploadResponseDtoTest {
         )
 
         // Post 객체 생성 (Files 생성에 필요)
-        mockPost = Post.builder()
-            .member(mockMember)
-            .title("테스트 게시글")
-            .description("테스트 내용")
-            .category(Post.Category.PRODUCT)
-            .price(50000)
-            .status(Post.Status.SALE)
-            .build()
+        mockPost = Post(
+            mockMember,
+            "테스트 게시글",
+            "테스트 내용",
+            Post.Category.PRODUCT,
+            50000,
+            Post.Status.SALE
+        )
 
         // Files 객체 생성
         testFiles = Files(

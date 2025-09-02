@@ -99,12 +99,12 @@ internal class ChatServiceTest {
             "테스트 설명",
             Post.Category.PRODUCT,
             100000,
-            Post.Status.SALE,
-            0,                   // favoriteCnt
-            mutableListOf(),     // chatRooms
-            null,                // trade
-            mutableListOf(),     // postFiles
-            mutableListOf()      // favoritePosts
+            Post.Status.SALE
+//            0,                   // favoriteCnt
+//            mutableListOf(),     // chatRooms
+//            null,                // trade
+//            mutableListOf(),     // postFiles
+//            mutableListOf()      // favoritePosts
         ).also {
             ReflectionTestUtils.setField(it, "id", 1L)
         }
