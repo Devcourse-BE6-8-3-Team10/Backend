@@ -40,8 +40,9 @@ internal class AdmTradeControllerTest @Autowired constructor(
     private val tradeService: TradeService,
     private val tradeRepository: TradeRepository,
     private val rq: Rq,
-    @MockBean private val fileStorageService: FileStorageService
 ) {
+    @MockBean lateinit var fileStorageService: FileStorageService
+
     @Test
     @WithUserDetails("admin@admin.com")
     @DisplayName("1. 전체 거래 목록 전체 조회 - 관리자")
