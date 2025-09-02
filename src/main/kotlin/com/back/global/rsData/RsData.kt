@@ -10,7 +10,8 @@ data class RsData<T>(
 ) {
     constructor(resultCode: String, message: String, data: T? = null) : this(
         resultCode,
-        resultCode.split("-", limit = 2)[0].toInt(),
+        resultCode.substringBefore("-", resultCode)
+            .toIntOrNull() ?: 500, // fallback: 500(서버 오류) 또는 400 등 정책에 맞춰 조정
         message,
         data
     )

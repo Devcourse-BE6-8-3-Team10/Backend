@@ -12,7 +12,6 @@ import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingRequestHeaderException
 import org.springframework.web.bind.annotation.ExceptionHandler
-import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
@@ -40,16 +39,13 @@ class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException::class)
     fun handle(ex: ConstraintViolationException): ResponseEntity<RsData<Nothing?>> {
         val message = ex.constraintViolations
-            .map { violation ->
-                val pathParts = violation.propertyPath.toString().split(".", limit = 2)
-                val field = if (pathParts.size > 1) pathParts[1] else violation.propertyPath.toString()
-                val messageTemplateBits = violation.messageTemplate.split(".").dropLast(1)
-                val code = if (messageTemplateBits.size >= 2)
-                    messageTemplateBits[messageTemplateBits.size - 2]
-                else
-                    "Unknown"
-                val violationMessage = violation.message
-                "$field-$code-$violationMessage"
+            .map { v ->
+                val field = v.propertyPath.toString().substringAfterLast('.')
+                val code = v.messageTemplate
+                    .removePrefix("{").removeSuffix("}")
+                    .split('.')
+                    .let { parts -> if (parts.size >= 2) parts[parts.size - 2] else "Unknown" }
+                "$field-$code-${v.message}"
             }
             .sorted()
             .joinToString("\n")
@@ -91,9 +87,9 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ServiceException::class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handle(ex: ServiceException): ResponseEntity<RsData<Nothing?>> {
         val rsData = ex.rsData
-        return ResponseEntity(rsData, HttpStatus.valueOf(rsData.statusCode))
+        val status = HttpStatus.resolve(rsData.statusCode) ?: HttpStatus.BAD_REQUEST
+        return ResponseEntity(rsData, status)
     }
 }
