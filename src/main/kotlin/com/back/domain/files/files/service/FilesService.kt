@@ -32,7 +32,7 @@ class FilesService(
         val post = postRepository.findById(postId)
             .orElseThrow { ServiceException("404", "존재하지 않는 게시글입니다: $postId") }
 
-        if (rq.memberId != post.getMember().id) {
+        if (rq.memberId != post.member.id) {
             throw ServiceException("403", "게시글 작성자만 파일을 업로드할 수 있습니다.")
         }
 
@@ -103,7 +103,7 @@ class FilesService(
             throw ServiceException("400", "해당 게시글에 속하지 않는 파일입니다: $fileId")
         }
 
-        if (file.post.getMember().id != rq.memberId) {
+        if (file.post.member.id != rq.memberId) {
             throw ServiceException("403", "해당 파일을 삭제할 권한이 없습니다.")
         }
 

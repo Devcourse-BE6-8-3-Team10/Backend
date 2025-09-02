@@ -92,7 +92,7 @@ class ChatService(
         val post = postRepository.findById(postId)
             .orElseThrow { ServiceException("404-1", "존재하지 않는 게시글입니다.") }
 
-        val postAuthor = post.getMember()
+        val postAuthor = post.member
 
         log.debug("=== 채팅방 생성 시작 ===")
         log.debug("요청자: {} (ID: {})", requester.email, requester.id)

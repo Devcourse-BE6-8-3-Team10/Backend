@@ -30,7 +30,7 @@ class PostService(
         val member = currentMemberOrThrow
 
         // 카테고리 변환 예외 처리
-        val category = Post.Category.from(dto.category).orElse(null)
+        val category = Post.Category.from(dto.category)
             ?: throw ServiceException("400", "유효하지 않은 카테고리입니다.")
 
         val post = Post(
@@ -53,12 +53,12 @@ class PostService(
         val post = getPostOrThrow(postId)
 
         // 본인 게시글인지 확인
-        if (post.member?.id != member.id) {
+        if (post.member.id != member.id) {
             throw ServiceException("403", "자신의 게시글만 수정할 수 있습니다.")
         }
 
         // 카테고리 예외처리
-        val category = Post.Category.from(dto.category).orElse(null)
+        val category = Post.Category.from(dto.category)
             ?: throw ServiceException("400", "유효하지 않은 카테고리입니다.")
 
         // 수정 값 적용
@@ -68,7 +68,7 @@ class PostService(
 
     // 게시글 삭제
     @Transactional
-    fun deletePost(postId: Long): RsData<String?> {
+    fun deletePost(postId: Long): RsData<String> {
         val member = currentMemberOrThrow
 
         // 예외처리
@@ -76,7 +76,7 @@ class PostService(
             ?: throw ServiceException("404", "이미 삭제되었거나 존재하지 않는 게시글입니다.")
 
         // 본인 게시글인지 확인
-        if (post.member?.id != member.id) {
+        if (post.member.id != member.id) {
             throw ServiceException("403", "자신의 게시글만 삭제할 수 있습니다.")
         }
 

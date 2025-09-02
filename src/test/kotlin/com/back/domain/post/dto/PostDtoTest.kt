@@ -133,7 +133,7 @@ class PostDtosTest {
             fileUrl = "https://cdn.example.com/file1.png",
             sortOrder = 1
         )
-        post.postFiles.add(file)
+        post.addPostFile(file)
         return Triple(post, member, file)
     }
 
