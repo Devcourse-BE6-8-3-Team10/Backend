@@ -30,7 +30,7 @@ class PostService(
         val member = currentMemberOrThrow
 
         // 카테고리 변환 예외 처리
-        val category = Post.Category.from(dto.category).orElse(null)
+        val category = Post.Category.from(dto.category)
             ?: throw ServiceException("400", "유효하지 않은 카테고리입니다.")
 
         val post = Post(
@@ -58,7 +58,7 @@ class PostService(
         }
 
         // 카테고리 예외처리
-        val category = Post.Category.from(dto.category).orElse(null)
+        val category = Post.Category.from(dto.category)
             ?: throw ServiceException("400", "유효하지 않은 카테고리입니다.")
 
         // 수정 값 적용

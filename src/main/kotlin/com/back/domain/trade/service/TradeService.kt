@@ -26,7 +26,7 @@ class TradeService (
         val post = postRepository.findById(postId)
             .orElseThrow { ServiceException("404-1", "게시글을 찾을 수 없습니다.") }
 
-        if (post.member.id == buyerId) throw ServiceException("403-1", "자신의 게시글은 구매할 수 없습니다.")
+        if (post.member!!.id == buyerId) throw ServiceException("403-1", "자신의 게시글은 구매할 수 없습니다.")
 
         val buyer = memberRepository.findById(buyerId)
             .orElseThrow { ServiceException("404-2", "구매자를 찾을 수 없습니다.") }
