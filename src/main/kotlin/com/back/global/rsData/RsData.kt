@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 data class RsData<T>(
     val resultCode: String,
     @JsonIgnore val statusCode: Int,
-    val message: String,
+    val msg: String,
     val data: T?
 ) {
     constructor(resultCode: String, message: String, data: T? = null) : this(
