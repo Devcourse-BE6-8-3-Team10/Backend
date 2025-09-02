@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import java.io.IOException
 import java.net.MalformedURLException
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 
@@ -61,11 +62,34 @@ class LocalFileStorageService : FileStorageService {
             val filePath = Paths.get(uploadDir, relativePath).toAbsolutePath().normalize()
             if (Files.exists(filePath)) {
                 Files.delete(filePath)
+                log.info("성공적으로 물리적 파일을 삭제했습니다: {}", filePath)
+
+                // 부모 디렉토리 확인 및 삭제
+                val parentDir = filePath.parent
+                if (parentDir != null && Files.isDirectory(parentDir) && isDirectoryEmpty(parentDir)) {
+                    // uploadDir 자체를 삭제하지 않도록 방지
+                    val uploadDirPath = Paths.get(uploadDir).toAbsolutePath().normalize()
+                    if (parentDir != uploadDirPath) {
+                        Files.delete(parentDir)
+                        log.info("비어있는 부모 디렉토리를 삭제했습니다: {}", parentDir)
+                    }
+                }
             } else {
-                throw RuntimeException("로컬 파일 시스템에서 파일을 찾을 수 없어 삭제 실패: $fileUrl")
+                // 파일이 존재하지 않는 경우는 오류가 아닐 수 있음 (예: 재시도)
+                log.warn("삭제할 물리적 파일을 찾을 수 없습니다: {}", fileUrl)
             }
         } catch (e: IOException) {
+            // 로깅 강화
+            log.error("로컬 파일 시스템에서 파일 삭제 중 심각한 오류 발생: {}", fileUrl, e)
             throw RuntimeException("로컬 파일 시스템에서 파일 삭제 실패: ${e.message}", e)
+        }
+    }
+
+    // 디렉토리가 비어있는지 확인하는 헬퍼 메서드
+    @Throws(IOException::class)
+    private fun isDirectoryEmpty(directory: Path): Boolean {
+        Files.newDirectoryStream(directory).use { dirStream ->
+            return !dirStream.iterator().hasNext()
         }
     }
 

@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional
 class PostService(
     private val postRepository: PostRepository,
     private val favoritePostRepository: FavoritePostRepository,
+    private val filesService: com.back.domain.files.files.service.FilesService,
     private val rq: Rq
 ) {
 
@@ -79,6 +80,9 @@ class PostService(
         if (post.member.id != member.id) {
             throw ServiceException("403", "자신의 게시글만 삭제할 수 있습니다.")
         }
+
+        // 연관된 파일 삭제
+        filesService.deleteFilesByPost(post)
 
         postRepository.delete(post)
         return RsData(ResultCode.SUCCESS, "게시글 삭제 완료", null)

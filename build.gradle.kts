@@ -79,5 +79,5 @@ tasks.withType<Test> {
 
 // 배포시 경로 잡아주기
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
-    mainClass.set("com.back.BackApplication") // ◀◀ @SpringBootApplication이 있는 클래스의 전체 경로
+    mainClass.set("com.back.BackApplicationKt") // ◀◀ @SpringBootApplication이 있는 클래스의 전체 경로
 }

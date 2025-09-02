@@ -198,7 +198,7 @@ internal class LocalFileStorageServiceTest {
     internal inner class DeletePhysicalFileTest {
 
         @Test
-        @DisplayName("정상적인 파일 삭제")
+        @DisplayName("정상적인 파일 삭제 및 빈 부모 폴더 삭제")
         fun t9() {
             // Given
             val fileContent = "test content".toByteArray()
@@ -210,13 +210,17 @@ internal class LocalFileStorageServiceTest {
             val fileUrl = localFileStorageService.storeFile(fileContent, originalFilename, contentType, subFolder)
             val relativePath = fileUrl.substring("/files/".length)
             val filePath = tempDir.resolve(relativePath)
+            val parentDir = filePath.parent
+            
             assertThat(Files.exists(filePath)).isTrue()
+            assertThat(Files.exists(parentDir)).isTrue()
 
             // When
             localFileStorageService.deletePhysicalFile(fileUrl)
 
             // Then
             assertThat(Files.exists(filePath)).isFalse()
+            assertThat(Files.exists(parentDir)).isFalse() // 부모 폴더도 삭제되었는지 확인
         }
 
         @Test
@@ -244,30 +248,28 @@ internal class LocalFileStorageServiceTest {
         }
 
         @Test
-        @DisplayName("존재하지 않는 파일 삭제 시 예외")
+        @DisplayName("존재하지 않는 파일 삭제 시 예외 대신 경고 로그")
         fun t12() {
             // Given
             val fileUrl = "/files/post_1/nonexistent.jpg"
 
             // When & Then
-            assertThatThrownBy {
+            assertThatCode {
                 localFileStorageService.deletePhysicalFile(fileUrl)
-            }
-                .isInstanceOf(RuntimeException::class.java)
-                .hasMessageContaining("로컬 파일 시스템에서 파일을 찾을 수 없어 삭제 실패")
+            }.doesNotThrowAnyException()
         }
 
         @Test
-        @DisplayName("잘못된 URL 형식으로 삭제 시 예외")
+        @DisplayName("잘못된 URL 형식이어도 예외 없음")
         fun t13() {
             // Given
             val fileUrl = "invalid-url-format"
 
             // When & Then
-            assertThatThrownBy {
+            // 잘못된 형식의 URL도 결국 존재하지 않는 파일 경로로 취급되므로 예외가 발생하지 않음
+            assertThatCode {
                 localFileStorageService.deletePhysicalFile(fileUrl)
-            }
-                .isInstanceOf(RuntimeException::class.java)
+            }.doesNotThrowAnyException()
         }
     }
 
@@ -415,6 +417,9 @@ internal class LocalFileStorageServiceTest {
 
             // When - 저장
             val fileUrl = localFileStorageService.storeFile(fileContent, originalFilename, contentType, subFolder)
+            val relativePath = fileUrl.substring("/files/".length)
+            val filePath = tempDir.resolve(relativePath)
+            val parentDir = filePath.parent
 
             // Then - 저장 확인
             assertThat(fileUrl).startsWith("/files/integration_test/")
@@ -430,9 +435,8 @@ internal class LocalFileStorageServiceTest {
             localFileStorageService.deletePhysicalFile(fileUrl)
 
             // Then - 삭제 확인
-            val relativePath = fileUrl.substring("/files/".length)
-            val filePath = tempDir.resolve(relativePath)
             assertThat(Files.exists(filePath)).isFalse()
+            assertThat(Files.exists(parentDir)).isFalse() // 부모 폴더도 삭제되었는지 확인
         }
 
         @Test
@@ -529,7 +533,7 @@ internal class LocalFileStorageServiceTest {
         }
 
         @Test
-        @DisplayName("이미 삭제된 파일 재삭제 시 예외")
+        @DisplayName("이미 삭제된 파일 재삭제 시 예외 대신 경고 로그")
         fun t26() {
             // Given
             val fileContent = "test content".toByteArray()
@@ -538,14 +542,13 @@ internal class LocalFileStorageServiceTest {
             val subFolder = "post_1"
 
             val fileUrl = localFileStorageService.storeFile(fileContent, originalFilename, contentType, subFolder)
-            localFileStorageService.deletePhysicalFile(fileUrl)
+            localFileStorageService.deletePhysicalFile(fileUrl) // 첫 번째 삭제
 
             // When & Then
-            assertThatThrownBy {
+            // 다시 삭제를 시도해도 예외가 발생하지 않아야 함
+            assertThatCode {
                 localFileStorageService.deletePhysicalFile(fileUrl)
-            }
-                .isInstanceOf(RuntimeException::class.java)
-                .hasMessageContaining("로컬 파일 시스템에서 파일을 찾을 수 없어 삭제 실패")
+            }.doesNotThrowAnyException()
         }
     }
 }
