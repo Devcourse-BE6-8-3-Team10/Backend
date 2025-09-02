@@ -36,14 +36,14 @@ public class PostService {
         Post.Category category = Post.Category.from(dto.getCategory())
                 .orElseThrow(() -> new ServiceException("400", "유효하지 않은 카테고리입니다."));
 
-        Post post = Post.builder()
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .category(category)
-                .price(dto.getPrice())
-                .member(member)
-                .status(Post.Status.SALE)
-                .build();
+        Post post = new Post(
+                member,
+                dto.getTitle(),
+                dto.getDescription(),
+                category,
+                dto.getPrice(),
+                Post.Status.SALE
+        );
 
         Post saved = postRepository.save(post);
         return PostDetailDTO.Companion.of(saved, false);

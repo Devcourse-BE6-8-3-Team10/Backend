@@ -59,14 +59,14 @@ internal class AsyncFileServiceTest {
         ReflectionTestUtils.setField(testMember, "id", 1L)
 
         // 테스트 게시글 생성
-        testPost = Post.builder()
-            .member(testMember)
-            .title("테스트 게시글")
-            .description("테스트 설명")
-            .category(Post.Category.PRODUCT)
-            .price(100000)
-            .status(Post.Status.SALE)
-            .build()
+        testPost = Post (
+            testMember,
+            "테스트 게시글",
+            "테스트 설명",
+            Post.Category.PRODUCT,
+            100000,
+            Post.Status.SALE
+        )
         ReflectionTestUtils.setField(testPost, "id", 1L)
 
         // 테스트 파일 생성
