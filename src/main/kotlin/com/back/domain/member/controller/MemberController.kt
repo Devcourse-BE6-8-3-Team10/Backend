@@ -9,6 +9,7 @@ import com.back.global.rsData.ResultCode
 import com.back.global.rsData.RsData
 import com.back.global.security.auth.MemberDetails
 import io.swagger.v3.oas.annotations.Operation
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -47,7 +48,7 @@ class MemberController(
     @Operation(summary = "회원 정보 수정", description = "현재 로그인한 사용자의 이름 또는 비밀번호를 수정합니다.")
     fun updateMemberInfo(
         @AuthenticationPrincipal memberDetails: MemberDetails,
-        @RequestBody request: MemberUpdateRequest
+        @Valid @RequestBody request: MemberUpdateRequest
     ): ResponseEntity<RsData<String?>> {
         memberService.updateMemberInfo(memberDetails.member, request)
         return ResponseEntity.ok(
