@@ -47,12 +47,12 @@ internal class ChatEntityTest {
             "테스트 설명",
             Post.Category.PRODUCT,
             100000,
-            Post.Status.SALE,
-            0,
-            mutableListOf(),
-            null,
-            mutableListOf(),
-            mutableListOf()
+            Post.Status.SALE
+//            0,
+//            mutableListOf(),
+//            null,
+//            mutableListOf(),
+//            mutableListOf()
         )
     }
 

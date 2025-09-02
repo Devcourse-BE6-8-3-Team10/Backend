@@ -29,7 +29,7 @@ class Files(
 
     // JPA를 위한 기본 생성자 (protected)
     protected constructor() : this(
-        post = Post(), // 임시 객체, 실제로는 JPA가 처리
+        post = Post.stub(), // 임시 객체, 실제로는 JPA가 처리
         fileName = "",
         fileType = "",
         fileSize = 0L,
