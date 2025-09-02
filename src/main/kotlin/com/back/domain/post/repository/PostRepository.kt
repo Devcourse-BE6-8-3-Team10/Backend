@@ -43,5 +43,5 @@ interface PostRepository : JpaRepository<Post, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Post p WHERE p.id = :postId")
-    fun findByIdForUpdate(@Param("postId") postId: Long): Post
+    fun findByIdForUpdate(@Param("postId") postId: Long): Post?
 }

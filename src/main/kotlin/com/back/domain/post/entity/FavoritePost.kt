@@ -6,13 +6,12 @@ import jakarta.persistence.*
 
 @Entity
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["member_id", "post_id"])])
-class FavoritePost : BaseEntity() {
-
-    @ManyToOne(fetch = FetchType.LAZY)
+class FavoritePost(
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id", nullable = false)
-    val member: Member? = null
+    val member: Member,
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "post_id", nullable = false)
-    val post: Post? = null
-}
+    val post: Post
+) : BaseEntity()

@@ -135,10 +135,12 @@ class PostService(
                 "'${post.title}' 찜 해제 완료"
             )
         } else {
-            val favoritePost = FavoritePost()
-            // FavoritePost의 실제 필드 설정 방법에 따라 수정 필요
-            // 예: favoritePost.member = member, favoritePost.post = post
-            favoritePostRepository.save(favoritePost)
+            favoritePostRepository.save(
+                FavoritePost(
+                    member = member,
+                    post = post
+                )
+            )
 
             postRepository.increaseFavoriteCnt(postId)
             val newFavoriteCnt = postRepository.getFavoriteCnt(postId)

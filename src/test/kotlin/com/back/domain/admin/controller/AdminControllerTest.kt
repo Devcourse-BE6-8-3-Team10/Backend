@@ -213,8 +213,8 @@ class AdminControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("200"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("특허 정보 조회 성공"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.data.id").value(testPost.id))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.data.title").value(testPost.getTitle()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.data.authorName").value(testPost.getMember().name))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.title").value(testPost.title))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.authorName").value(testPost.member.name))
     }
 
     @Test
@@ -255,11 +255,11 @@ class AdminControllerTest {
 
         // then
         val updated = postRepository.findById(testPost.id).orElseThrow()
-        Assertions.assertEquals("수정된 특허 제목", updated.getTitle())
-        Assertions.assertEquals("수정된 특허 설명입니다.", updated.getDescription())
-        Assertions.assertEquals(Post.Category.METHOD, updated.getCategory())
-        Assertions.assertEquals(200000, updated.getPrice())
-        Assertions.assertEquals(Post.Status.SALE, updated.getStatus())
+        Assertions.assertEquals("수정된 특허 제목", updated.title)
+        Assertions.assertEquals("수정된 특허 설명입니다.", updated.description)
+        Assertions.assertEquals(Post.Category.METHOD, updated.category)
+        Assertions.assertEquals(200000, updated.price)
+        Assertions.assertEquals(Post.Status.SALE, updated.status)
     }
 
     @Test
@@ -327,7 +327,7 @@ class AdminControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("특허 삭제 성공"))
 
         // then
-        assert(postRepository.findById(patentId).isEmpty())
+        Assertions.assertTrue(postRepository.findById(patentId).isEmpty())
     }
 
     @Test
