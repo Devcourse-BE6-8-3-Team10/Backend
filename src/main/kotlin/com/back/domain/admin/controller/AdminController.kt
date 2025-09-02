@@ -5,25 +5,39 @@ import com.back.domain.admin.dto.request.AdminUpdatePatentRequest
 import com.back.domain.admin.dto.response.AdminMemberResponse
 import com.back.domain.admin.dto.response.AdminPatentResponse
 import com.back.domain.admin.service.AdminService
+import com.back.domain.trade.dto.TradeDetailDto
+import com.back.domain.trade.dto.TradeDto
+import com.back.domain.trade.dto.TradePageResponse
+import com.back.domain.trade.dto.TradePageResponse.Companion.of
+import com.back.domain.trade.service.TradeService
 import com.back.global.rsData.ResultCode
 import com.back.global.rsData.RsData
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Positive
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "AdminController", description = "관리자용 API 컨트롤러")
+@Validated
 class AdminController(
-    private val adminService: AdminService
+    private val adminService: AdminService,
+    private val tradeService: TradeService
 ) {
+
+    // ========== 회원 관리 ==========
 
     // 전체 회원 목록 조회 API(탈퇴 포함)
     @Operation(summary = "전체 회원 목록 조회", description = "모든 회원 목록을 페이징하여 조회합니다 (탈퇴 포함)")
@@ -61,6 +75,18 @@ class AdminController(
             RsData(ResultCode.SUCCESS, "회원 정보 수정 성공")
         )
     }
+
+    // 회원 탈퇴 API
+    @DeleteMapping("/members/{memberId}")
+    @Operation(summary = "회원 탈퇴 (관리자)", description = "관리자가 특정 회원을 탈퇴시킵니다.")
+    fun deleteMemberByAdmin(@PathVariable memberId: Long): ResponseEntity<RsData<String>> {
+        adminService.deleteMember(memberId)
+        return ResponseEntity.ok(
+            RsData(ResultCode.SUCCESS, "회원 탈퇴 성공")
+        )
+    }
+
+    // ========== 특허 관리 ==========
 
     // 전체 특허 목록 조회 API
     @Operation(summary = "전체 특허 목록 조회", description = "모든 특허 목록을 페이징하여 조회합니다")
@@ -109,13 +135,25 @@ class AdminController(
         )
     }
 
-    // 회원 탈퇴 API
-    @DeleteMapping("/members/{memberId}")
-    @Operation(summary = "회원 탈퇴 (관리자)", description = "관리자가 특정 회원을 탈퇴시킵니다.")
-    fun deleteMemberByAdmin(@PathVariable memberId: Long): ResponseEntity<RsData<String>> {
-        adminService.deleteMember(memberId)
-        return ResponseEntity.ok(
-            RsData(ResultCode.SUCCESS, "회원 탈퇴 성공")
-        )
+    // ========== 거래 관리 ==========
+
+    @GetMapping("/trades")
+    @Operation(summary = "전체 거래 내역 조회", description = "모든 거래 내역을 페이징하여 조회합니다")
+    fun getAllTrades(
+        @ParameterObject @PageableDefault(
+            size = 20,
+            sort = ["createdAt"],
+            direction = Sort.Direction.DESC
+        ) pageable: Pageable
+    ): RsData<TradePageResponse<TradeDto>> {
+        val trades: Page<TradeDto> = tradeService.getAllTrades(pageable)
+        return RsData<TradePageResponse<TradeDto>>("200-1", "전체 거래 조회 성공", of<TradeDto>(trades))
+    }
+
+    @GetMapping("/trades/{id}")
+    @Operation(summary = "관리자 거래 상세 조회", description = "관리자가 거래 상세 정보를 조회합니다")
+    fun getTradeDetailAsAdmin(@PathVariable @Positive id: Long): RsData<TradeDetailDto> {
+        val dto = tradeService.getTradeDetailAsAdmin(id)
+        return RsData("200-1", "관리자 거래 상세 조회 성공", dto)
     }
 }

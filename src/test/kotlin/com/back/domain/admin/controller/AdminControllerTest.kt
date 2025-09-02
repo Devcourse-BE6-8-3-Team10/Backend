@@ -8,14 +8,23 @@ import com.back.domain.member.entity.Status
 import com.back.domain.member.repository.MemberRepository
 import com.back.domain.post.entity.Post
 import com.back.domain.post.repository.PostRepository
+import com.back.domain.trade.dto.TradeDto
+import com.back.domain.trade.repository.TradeRepository
+import com.back.domain.trade.service.TradeService
+import com.back.global.rq.Rq
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.junit.jupiter.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.http.MediaType
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.test.context.support.WithUserDetails
@@ -23,8 +32,12 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.transaction.annotation.Transactional
+import java.util.function.Function
+import java.util.function.Supplier
+import java.util.stream.Collectors
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -51,15 +64,25 @@ class AdminControllerTest {
     @Autowired
     private lateinit var postRepository: PostRepository
 
+    @Autowired
+    private lateinit var tradeService: TradeService
+
+    @Autowired
+    private lateinit var tradeRepository: TradeRepository
+
+    @Autowired
+    private lateinit var rq: Rq
+
     private lateinit var testMember: Member
     private lateinit var testPost: Post
 
     @BeforeEach
     fun setUp() {
-        // 테스트용 회원과 특허 데이터 설정
         testMember = memberRepository.findByEmail("user1@user.com").orElseThrow()
         testPost = postRepository.findByMember(testMember).stream().findFirst().orElseThrow()
     }
+
+    // ========== 회원 관리 테스트 ==========
 
     @Test
     @DisplayName("전체 회원 목록 조회 성공")
@@ -122,7 +145,6 @@ class AdminControllerTest {
     @DisplayName("회원 정보 수정 성공")
     @WithUserDetails(value = "admin@admin.com")
     fun updateMember_success() {
-        // given
         val member = memberRepository.findByEmail("user2@user.com").orElseThrow()
 
         val request = AdminUpdateMemberRequest(
@@ -131,7 +153,6 @@ class AdminControllerTest {
             "https://new.image.url/profile.png"
         )
 
-        // when
         mockMvc.perform(
             MockMvcRequestBuilders.patch("/api/admin/members/${member.id}")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -140,18 +161,16 @@ class AdminControllerTest {
             .andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("200"))
 
-        // then
         val updated = memberRepository.findById(member.id).orElseThrow()
-        Assertions.assertEquals("변경된이름", updated.name)
-        Assertions.assertEquals(Status.BLOCKED, updated.status)
-        Assertions.assertEquals("https://new.image.url/profile.png", updated.profileUrl)
+        assertEquals("변경된이름", updated.name)
+        assertEquals(Status.BLOCKED, updated.status)
+        assertEquals("https://new.image.url/profile.png", updated.profileUrl)
     }
 
     @Test
     @DisplayName("회원 정보 수정 실패 - 존재하지 않는 회원")
     @WithUserDetails(value = "admin@admin.com")
     fun updateMember_fail_notFound() {
-        // given
         val invalidId = 9999L
         val request = AdminUpdateMemberRequest(
             "아무거나",
@@ -159,7 +178,6 @@ class AdminControllerTest {
             null
         )
 
-        // when & then
         mockMvc.perform(
             MockMvcRequestBuilders.patch("/api/admin/members/$invalidId")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -170,7 +188,8 @@ class AdminControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("존재하지 않는 회원입니다."))
     }
 
-    // ========== 특허 관련 테스트 시나리오 ==========
+    // ========== 특허 관리 테스트 ==========
+
     @Test
     @DisplayName("전체 특허 목록 조회 성공")
     @WithUserDetails(value = "admin@admin.com", userDetailsServiceBeanName = "customUserDetailsService")
@@ -234,7 +253,6 @@ class AdminControllerTest {
     @DisplayName("특허 정보 수정 성공")
     @WithUserDetails(value = "admin@admin.com")
     fun updatePatent_success() {
-        // given
         val request = AdminUpdatePatentRequest(
             "수정된 특허 제목",
             "수정된 특허 설명입니다.",
@@ -243,7 +261,6 @@ class AdminControllerTest {
             Post.Status.SALE
         )
 
-        // when
         mockMvc.perform(
             MockMvcRequestBuilders.patch("/api/admin/patents/${testPost.id}")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -253,20 +270,18 @@ class AdminControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("200"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("특허 정보 수정 성공"))
 
-        // then
         val updated = postRepository.findById(testPost.id).orElseThrow()
-        Assertions.assertEquals("수정된 특허 제목", updated.title)
-        Assertions.assertEquals("수정된 특허 설명입니다.", updated.description)
-        Assertions.assertEquals(Post.Category.METHOD, updated.category)
-        Assertions.assertEquals(200000, updated.price)
-        Assertions.assertEquals(Post.Status.SALE, updated.status)
+        assertEquals("수정된 특허 제목", updated.title)
+        assertEquals("수정된 특허 설명입니다.", updated.description)
+        assertEquals(Post.Category.METHOD, updated.category)
+        assertEquals(200000, updated.price)
+        assertEquals(Post.Status.SALE, updated.status)
     }
 
     @Test
     @DisplayName("특허 정보 수정 실패 - 유효하지 않은 카테고리")
     @WithUserDetails(value = "admin@admin.com")
     fun updatePatent_fail_invalidCategory() {
-        // given - JSON 문자열로 잘못된 카테고리 전송
         val invalidRequestJson = """
         {
             "title": "수정된 제목",
@@ -277,7 +292,6 @@ class AdminControllerTest {
         }
         """.trimIndent()
 
-        // when & then
         mockMvc.perform(
             MockMvcRequestBuilders.patch("/api/admin/patents/${testPost.id}")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -291,16 +305,14 @@ class AdminControllerTest {
     @DisplayName("특허 정보 수정 실패 - 가격이 0 이하")
     @WithUserDetails(value = "admin@admin.com")
     fun updatePatent_fail_invalidPrice() {
-        // given
         val request = AdminUpdatePatentRequest(
             "수정된 제목",
             "수정된 설명",
             Post.Category.PRODUCT,
-            -1000,  // 유효하지 않은 가격
+            -1000,
             Post.Status.SALE
         )
 
-        // when & then
         mockMvc.perform(
             MockMvcRequestBuilders.patch("/api/admin/patents/${testPost.id}")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -314,10 +326,8 @@ class AdminControllerTest {
     @DisplayName("특허 삭제 성공")
     @WithUserDetails(value = "admin@admin.com")
     fun deletePatent_success() {
-        // given
         val patentId = testPost.id
 
-        // when
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/api/admin/patents/$patentId")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -326,18 +336,15 @@ class AdminControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("200"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("특허 삭제 성공"))
 
-        // then
-        Assertions.assertTrue(postRepository.findById(patentId).isEmpty())
+        assertTrue(postRepository.findById(patentId).isEmpty())
     }
 
     @Test
     @DisplayName("특허 삭제 실패 - 존재하지 않는 특허")
     @WithUserDetails(value = "admin@admin.com")
     fun deletePatent_fail_notFound() {
-        // given
         val invalidId = 9999L
 
-        // when & then
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/api/admin/patents/$invalidId")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -355,6 +362,121 @@ class AdminControllerTest {
             MockMvcRequestBuilders.delete("/api/admin/patents/${testPost.id}")
                 .contentType(MediaType.APPLICATION_JSON)
         )
+            .andExpect(MockMvcResultMatchers.status().isForbidden())
+    }
+
+    // ========== 거래 관리 테스트 ==========
+
+    @Test
+    @WithUserDetails("admin@admin.com")
+    @DisplayName("전체 거래 목록 전체 조회 - 관리자")
+    fun getAllTrades_success() {
+        val pageable: Pageable = PageRequest.of(0, 20)
+        val expectedPage: Page<TradeDto> = tradeService.getAllTrades(pageable)
+        val trades = expectedPage.content
+
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/admin/trades")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(MockMvcResultHandlers.print())
+
+        resultActions
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("200-1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("전체 거래 조회 성공"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.content").isArray())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.content.length()").value(trades.size))
+
+        val json = resultActions.andReturn().response.contentAsString
+        val contentArray = objectMapper.readTree(json).path("data").path("content")
+
+        val expectedMap = trades.stream()
+            .collect(Collectors.toMap(TradeDto::id, Function.identity<TradeDto?>()))
+
+        for (actual in contentArray) {
+            val id = actual.get("id").asLong()
+            val expected = expectedMap[id]
+
+            assertThat(expected).`as`("id=$id 인 거래가 실제 기대값에 없음").isNotNull()
+            assertThat(actual.get("postId").asLong()).isEqualTo(expected!!.postId)
+            assertThat(actual.get("sellerId").asLong()).isEqualTo(expected.sellerId)
+            assertThat(actual.get("buyerId").asLong()).isEqualTo(expected.buyerId)
+            assertThat(actual.get("price").asInt()).isEqualTo(expected.price)
+            assertThat(actual.get("status").asText()).isEqualTo(expected.status.name)
+            assertThat(actual.get("createdAt").asText()).isNotBlank()
+        }
+    }
+
+    @Test
+    @WithUserDetails("user1@user.com")
+    @DisplayName("전체 거래 목록 조회 - 일반 사용자")
+    fun getAllTrades_unauthorized() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/admin/trades")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isForbidden())
+    }
+
+    @Test
+    @WithUserDetails("admin@admin.com")
+    @DisplayName("거래 상세 조회 - 관리자")
+    fun getTradeDetail_success() {
+        val tradeId = 1L
+
+        val trade = tradeRepository.findById(tradeId)
+            .orElseThrow<RuntimeException>(Supplier { RuntimeException("거래를 찾을 수 없습니다.") })
+
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/admin/trades/$tradeId")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(MockMvcResultHandlers.print())
+
+        resultActions
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("200-1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("관리자 거래 상세 조회 성공"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.id").value(trade.id))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.postId").value(trade.post.id))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.postTitle").value(trade.post.title))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.postCategory").value(trade.post.category.label))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.price").value(trade.price))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.status").value(trade.status.name))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.sellerEmail").value(trade.seller.email))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.buyerEmail").value(trade.buyer.email))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.createdAt").exists())
+    }
+
+    @Test
+    @WithUserDetails("admin@admin.com")
+    @DisplayName("거래 상세 조회 - 존재하지 않는 거래")
+    fun getTradeDetail_notFound() {
+        val nonExistentTradeId = 999L
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/admin/trades/$nonExistentTradeId")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("404-1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("거래를 찾을 수 없습니다."))
+    }
+
+    @Test
+    @WithUserDetails("user1@user.com")
+    @DisplayName("거래 상세 조회 - 일반 사용자")
+    fun getTradeDetail_unauthorized() {
+        val tradeId = 1L
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/admin/trades/$tradeId")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(MockMvcResultHandlers.print())
             .andExpect(MockMvcResultMatchers.status().isForbidden())
     }
 }
