@@ -54,7 +54,7 @@ class ChatService(
     fun getChatRoomMessages(chatRoomId: Long, principal: Principal): List<MessageDto> {
         val member = memberRepository.findByEmail(principal.getName())
             .orElseThrow { ServiceException("404-3", "존재하지 않는 사용자입니다.") }
-        val requesterId = member.getId()
+        val requesterId = member.id
 
         // 채팅방 존재 확인
         if (!chatRoomRepository.existsById(chatRoomId)) {
@@ -68,7 +68,7 @@ class ChatService(
 
         // 메시지 조회 (시간순 정렬)
         return messageRepository.findByChatRoomId(chatRoomId)
-            .sortedBy { it.getCreatedAt() }
+            .sortedBy { it.createdAt }
             .map { message ->
                 MessageDto(
                     message.member?.name ?: "알수없음",
@@ -95,11 +95,11 @@ class ChatService(
         val postAuthor = post.getMember()
 
         log.debug("=== 채팅방 생성 시작 ===")
-        log.debug("요청자: {} (ID: {})", requester.email, requester.getId())
-        log.debug("게시글 작성자: {} (ID: {})", postAuthor.email, postAuthor.getId())
+        log.debug("요청자: {} (ID: {})", requester.email, requester.id)
+        log.debug("게시글 작성자: {} (ID: {})", postAuthor.email, postAuthor.id)
         log.debug("게시글 ID: {}", postId)
 
-        findExistingChatRoom(postId, requester.getId(), postAuthor.getId())?.let { existingChatRoomId ->
+        findExistingChatRoom(postId, requester.id, postAuthor.id)?.let { existingChatRoomId ->
             log.debug("기존 채팅방 발견: {}", existingChatRoomId)
             return existingChatRoomId
         }
@@ -114,8 +114,8 @@ class ChatService(
         roomParticipantRepository.save(RoomParticipant(savedChatRoom, requester))
         roomParticipantRepository.save(RoomParticipant(savedChatRoom, postAuthor))
 
-        log.debug("새 채팅방 생성 완료: {}", savedChatRoom.getId())
-        return savedChatRoom.getId()
+        log.debug("새 채팅방 생성 완료: {}", savedChatRoom.id)
+        return savedChatRoom.id
     }
 
     @Transactional
@@ -160,13 +160,13 @@ class ChatService(
             .orElseThrow { ServiceException("404-3", "존재하지 않는 사용자입니다.") }
 
         val participations = roomParticipantRepository
-            .findByMemberIdAndIsActiveTrueOrderByCreatedAtDesc(member.getId())
+            .findByMemberIdAndIsActiveTrueOrderByCreatedAtDesc(member.id)
 
         // RoomParticipant에서 ChatRoom 추출 및 DTO 변환
         return participations.map { participation ->
             val chatRoom = participation.chatRoom
             // 마지막 메시지 조회
-            val lastMessage = messageRepository.findFirstByChatRoomIdOrderByCreatedAtDesc(chatRoom.getId())
+            val lastMessage = messageRepository.findFirstByChatRoomIdOrderByCreatedAtDesc(chatRoom.id)
             val lastContent = lastMessage?.content ?: "대화를 시작해보세요."
 
             //이거 에케처리함?
@@ -185,7 +185,7 @@ class ChatService(
             .orElseThrow { ServiceException("404-3", "존재하지 않는 사용자입니다.") }
 
         val participant = roomParticipantRepository
-            .findByChatRoomIdAndMemberIdAndIsActiveTrue(chatRoomId, member.getId())
+            .findByChatRoomIdAndMemberIdAndIsActiveTrue(chatRoomId, member.id)
             .orElseThrow { ServiceException("404-5", "채팅방 참여자가 아닙니다.") }
 
         // 나가기 전에 다른 참여자들에게 알림 메시지 전송
@@ -206,7 +206,7 @@ class ChatService(
     private fun sendLeaveNotificationToOtherParticipants(chatRoomId: Long, leavingMember: Member) {
         try {
             log.info("=== 채팅방 나가기 알림 전송 시작 ===")
-            log.info("나가는 사용자: {} (ID: {})", leavingMember.name, leavingMember.getId())
+            log.info("나가는 사용자: {} (ID: {})", leavingMember.name, leavingMember.id)
             log.info("채팅방 ID: {}", chatRoomId)
 
             // 나가기 알림 메시지 생성

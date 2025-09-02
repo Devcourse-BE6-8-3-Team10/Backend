@@ -70,7 +70,7 @@ class AsyncFileService(
                     fileData.content,
                     fileData.originalFilename,
                     fileData.contentType,
-                    "post_${post.getId()}"
+                    "post_${post.id}"
                 )
             } catch (e: RuntimeException) {
                 log.error("물리 파일 저장 실패, 건너뜁니다: ${fileData.originalFilename}", e)

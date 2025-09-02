@@ -75,7 +75,7 @@ class MemberController(
         @RequestParam("file") file: MultipartFile?
     ): ResponseEntity<RsData<String?>> {
         // 본인의 프로필만 수정 가능하도록 검증 (보안 강화)
-        if (memberDetails.member.getId() != memberId) {
+        if (memberDetails.member.id != memberId) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(RsData(ResultCode.FORBIDDEN, "본인의 프로필 이미지만 수정할 수 있습니다."))
         }
@@ -113,7 +113,7 @@ class MemberController(
         @PathVariable memberId: Long
     ): ResponseEntity<RsData<Void?>> {
         // 본인의 프로필만 삭제 가능하도록 검증 (보안 강화)
-        if (memberDetails.member.getId() != memberId) {
+        if (memberDetails.member.id != memberId) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(RsData(ResultCode.FORBIDDEN, "본인의 프로필 이미지만 삭제할 수 있습니다."))
         }

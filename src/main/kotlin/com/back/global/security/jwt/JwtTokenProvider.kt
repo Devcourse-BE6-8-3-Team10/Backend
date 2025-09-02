@@ -29,7 +29,7 @@ class JwtTokenProvider(
         val now = Date()
         return Jwts.builder()
             .setSubject(member.email)
-            .claim("id", member.getId())
+            .claim("id", member.id)
             .claim("role", member.role.name)
             .setIssuedAt(now)
             .setExpiration(Date(now.time + accessTokenValidity))

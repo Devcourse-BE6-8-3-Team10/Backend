@@ -50,7 +50,7 @@ class MemberService(
     @Transactional
     fun deleteAccount(member: Member) {
         // 1. 반드시 영속 상태로 다시 가져오기
-        val foundMember = memberRepository.findById(member.getId())
+        val foundMember = memberRepository.findById(member.id)
             .orElseThrow {
                 ServiceException(
                     ResultCode.MEMBER_NOT_FOUND.code(),
@@ -66,7 +66,7 @@ class MemberService(
     // 회원 마이페이지 조회
     fun findMyPage(member: Member): MemberMyPageResponse {
         // 1. 반드시 영속 상태로 다시 가져오기
-        val foundMember = memberRepository.findById(member.getId())
+        val foundMember = memberRepository.findById(member.id)
             .orElseThrow {
                 ServiceException(
                     ResultCode.MEMBER_NOT_FOUND.code(),
@@ -82,7 +82,7 @@ class MemberService(
     @Transactional
     fun updateMemberInfo(member: Member, request: MemberUpdateRequest) {
         // 1. 반드시 영속 상태로 다시 가져오기
-        val foundMember = memberRepository.findById(member.getId())
+        val foundMember = memberRepository.findById(member.id)
             .orElseThrow {
                 ServiceException(
                     ResultCode.MEMBER_NOT_FOUND.code(),
