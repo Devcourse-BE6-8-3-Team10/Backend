@@ -2,6 +2,7 @@ package com.back.domain.files.files.service
 
 import com.back.domain.files.files.dto.FileUploadResponseDto
 import com.back.domain.files.files.repository.FilesRepository
+import com.back.domain.post.entity.Post
 import com.back.domain.post.repository.PostRepository
 import com.back.global.exception.ServiceException
 import com.back.global.rq.Rq
@@ -112,6 +113,12 @@ class FilesService(
         filesRepository.deleteById(fileId)
         return RsData("200", "파일 삭제 성공", null)
     }
+    
+    fun deleteFilesByPost(post: Post) {
+        post.postFiles.forEach { file ->
+            deletePhysicalFileSafely(file.fileUrl)
+        }
+    }
 
     // =================== 관리자 전용 서비스 구역 ===================
 
@@ -151,7 +158,7 @@ class FilesService(
         return RsData("200", "파일 삭제 성공 (관리자)", null)
     }
 
-    // ==============헬퍼 메서드 영역 ==============
+    // ==============헬퍼 메서드 영역 ==============/
     private fun deletePhysicalFileSafely(fileUrl: String) {
         try {
             fileStorageService.deletePhysicalFile(fileUrl)
