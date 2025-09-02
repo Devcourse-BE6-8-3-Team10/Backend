@@ -32,7 +32,7 @@ class FilesService(
         val post = postRepository.findById(postId)
             .orElseThrow { ServiceException("404", "존재하지 않는 게시글입니다: $postId") }
 
-        if (rq.memberId != post.getMember().getId()) {
+        if (rq.memberId != post.getMember().id) {
             throw ServiceException("403", "게시글 작성자만 파일을 업로드할 수 있습니다.")
         }
 
@@ -71,7 +71,7 @@ class FilesService(
         }
 
         // 비동기 서비스에 바이트 배열 목록 전달
-        asyncFileService.uploadFilesAsync(post.getId(), fileDataList)
+        asyncFileService.uploadFilesAsync(post.id, fileDataList)
 
         // 파일 처리 시작을 알리는 즉각적인 응답
         return RsData(
@@ -99,11 +99,11 @@ class FilesService(
         val file = filesRepository.findById(fileId)
             .orElseThrow { ServiceException("404", "파일이 존재하지 않습니다: $fileId") }
 
-        if (file.post.getId() != postId) {
+        if (file.post.id != postId) {
             throw ServiceException("400", "해당 게시글에 속하지 않는 파일입니다: $fileId")
         }
 
-        if (file.post.getMember().getId() != rq.memberId) {
+        if (file.post.getMember().id != rq.memberId) {
             throw ServiceException("403", "해당 파일을 삭제할 권한이 없습니다.")
         }
 

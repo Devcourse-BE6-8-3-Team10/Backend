@@ -42,12 +42,12 @@ class ChatDataInitializer(
 
         allMembers.forEach { member ->
             log.info("Member ID: {}, Email: {}, Name: {}",
-                member.getId(), member.email, member.name
+                member.id, member.email, member.name
             )
         }
 
         if (allMembers.isNotEmpty()) {
-            val firstMemberId = allMembers.first().getId()
+            val firstMemberId = allMembers.first().id
             createChatMessageIfNotExists("유저1", "안녕하세요! 첫 번째 메시지입니다.", firstMemberId, 1L)
         } else {
             log.warn("Member가 존재하지 않아 메시지를 생성할 수 없습니다.")
