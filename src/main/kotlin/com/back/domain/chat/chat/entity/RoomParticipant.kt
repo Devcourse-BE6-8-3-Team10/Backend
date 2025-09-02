@@ -10,33 +10,34 @@ class RoomParticipant(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id")
     val chatRoom: ChatRoom,
-    
-    @ManyToOne(fetch = FetchType.LAZY) 
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     val member: Member
 ) : BaseEntity() {
-    
+
     var leftAt: LocalDateTime? = null
         private set
-    
-    var isActive: Boolean = true
+
+    @Column(name = "is_active")
+    var active: Boolean = true
         private set
-    
+
     // 채팅방 나가기
     fun leave() {
         this.leftAt = LocalDateTime.now()
-        this.isActive = false
+        this.active = false
     }
-    
+
     // 채팅방 재참여
     fun rejoin() {
         this.leftAt = null
-        this.isActive = true
+        this.active = true
     }
-    
+
     // 활성화 (기존 채팅방 재사용시)
     fun activate() {
-        this.isActive = true
+        this.active = true
         this.leftAt = null
     }
 }

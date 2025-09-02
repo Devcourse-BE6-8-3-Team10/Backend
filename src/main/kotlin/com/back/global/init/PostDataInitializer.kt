@@ -12,6 +12,7 @@ import org.springframework.boot.ApplicationRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
+import org.springframework.core.annotation.Order
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -37,6 +38,7 @@ class PostDataInitializer(
     private val log = LoggerFactory.getLogger(javaClass)
 
     @Bean
+    @Order(1)
     fun postDataInitRunner(): ApplicationRunner = ApplicationRunner { init() }
 
     @Transactional

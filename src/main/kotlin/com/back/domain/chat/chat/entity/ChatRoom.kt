@@ -47,7 +47,7 @@ class ChatRoom : BaseEntity {
         this.post = post
     }
 
-    fun updateMember(member: Member?) {
+    fun updateMember(member: Member) {
         this.member = member
     }
 

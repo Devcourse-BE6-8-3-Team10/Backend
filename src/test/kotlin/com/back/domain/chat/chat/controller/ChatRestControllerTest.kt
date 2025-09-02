@@ -1,9 +1,18 @@
 package com.back.domain.chat.chat.controller
 
+import com.back.domain.chat.chat.entity.ChatRoom
+import com.back.domain.chat.chat.entity.RoomParticipant
+import com.back.domain.chat.chat.repository.ChatRoomRepository
+import com.back.domain.chat.chat.repository.RoomParticipantRepository
 import com.back.domain.chat.chat.service.ChatService
 import com.back.domain.files.files.service.FileStorageService
+import com.back.domain.member.repository.MemberRepository
+import com.back.domain.post.entity.Post
+import com.back.domain.post.repository.PostRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.cloud.storage.Storage
+import org.hamcrest.Matchers
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -37,11 +46,64 @@ internal class ChatRestControllerTest {
     @Autowired
     private lateinit var chatService: ChatService
 
+    @Autowired
+    private lateinit var memberRepository: MemberRepository
+
+    @Autowired
+    private lateinit var postRepository: PostRepository
+
+    @Autowired
+    private lateinit var chatRoomRepository: ChatRoomRepository
+
+    @Autowired
+    private lateinit var roomParticipantRepository: RoomParticipantRepository
+
     @MockitoBean
     private lateinit var fileStorageService: FileStorageService
 
     @MockitoBean
     private lateinit var storage: Storage
+
+    @BeforeEach
+    fun setUp() {
+        // 테스트용 Post 조회/생성
+        val testPost = postRepository.findById(1L).orElseGet {
+            val member = memberRepository.findByEmail("user2@user.com").get()
+            val post = Post(
+                member,
+                "테스트 게시글",
+                "테스트용 게시글입니다",
+                Post.Category.PRODUCT,
+                1000000,
+                Post.Status.SALE
+            )
+            postRepository.save(post)
+        }
+
+        // 테스트용 ChatRoom 생성
+        val testChatRoom = chatRoomRepository.findByRoomName("테스트 채팅방") ?: run {
+            val member = memberRepository.findByEmail("user2@user.com").get()
+            val chatRoom = ChatRoom().apply {
+                updateRoomName("테스트 채팅방")
+                updatePost(testPost)
+                updateMember(member)
+            }
+            chatRoomRepository.save(chatRoom)
+        }
+
+        // 테스트용 RoomParticipant 생성
+        val member = memberRepository.findByEmail("user2@user.com").get()
+        val existingParticipant = roomParticipantRepository.findAll()
+            .find { it.chatRoom.id == testChatRoom.id && it.member.id == member.id }
+
+        if (existingParticipant == null) {
+            val participant = RoomParticipant(
+                chatRoom = testChatRoom,
+                member = member
+            )
+            roomParticipantRepository.save(participant)
+        }
+    }
 
     @Nested
     @DisplayName("채팅방 메시지 조회 API 테스트")
@@ -172,10 +234,12 @@ internal class ChatRestControllerTest {
                     .with(csrf())
             )
                 .andDo(print())
+                .andExpect(jsonPath("$.data.length()").value(Matchers.greaterThan(0)))
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("200"))
                 .andExpect(jsonPath("$.msg").value("내 채팅방 목록 조회 성공"))
-                .andExpect(jsonPath("$.data").isArray)
+
+
         }
 
         @Test
