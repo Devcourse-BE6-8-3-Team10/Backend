@@ -72,7 +72,7 @@ class AdminService(
         val post = postRepository.findById(patentId)
             .orElseThrow {
                 ServiceException(
-                    ResultCode.POST_NOT_FOUND.code(),
+                    ResultCode.POST_NOT_FOUND.code,
                     "존재하지 않는 특허입니다."
                 )
             }
@@ -88,7 +88,7 @@ class AdminService(
         val post = postRepository.findById(patentId)
             .orElseThrow {
                 ServiceException(
-                    ResultCode.POST_NOT_FOUND.code(),
+                    ResultCode.POST_NOT_FOUND.code,
                     "해당 특허가 존재하지 않습니다."
                 )
             }
@@ -106,7 +106,7 @@ class AdminService(
         val post = postRepository.findById(patentId)
             .orElseThrow {
                 ServiceException(
-                    ResultCode.POST_NOT_FOUND.code(),
+                    ResultCode.POST_NOT_FOUND.code,
                     "해당 특허가 존재하지 않습니다."
                 )
             }
@@ -128,7 +128,7 @@ class AdminService(
         return memberRepository.findById(memberId)
             .orElseThrow {
                 ServiceException(
-                    ResultCode.MEMBER_NOT_FOUND.code(),
+                    ResultCode.MEMBER_NOT_FOUND.code,
                     "존재하지 않는 회원입니다."
                 )
             }

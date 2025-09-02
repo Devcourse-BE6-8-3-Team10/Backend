@@ -18,29 +18,29 @@ data class RsData<T>(
 
     // enum 기반 생성자들
     constructor(resultCode: ResultCode) : this(
-        resultCode.code(),
-        resultCode.status(),
-        resultCode.message(),
+        resultCode.code,
+        resultCode.status,
+        resultCode.defaultMessage,
         null
     )
 
     constructor(resultCode: ResultCode, data: T?) : this(
-        resultCode.code(),
-        resultCode.status(),
-        resultCode.message(),
+        resultCode.code,
+        resultCode.status,
+        resultCode.defaultMessage,
         data
     )
 
     constructor(resultCode: ResultCode, customMessage: String) : this(
-        resultCode.code(),
-        resultCode.status(),
+        resultCode.code,
+        resultCode.status,
         customMessage,
         null
     )
 
     constructor(resultCode: ResultCode, customMessage: String, data: T?) : this(
-        resultCode.code(),
-        resultCode.status(),
+        resultCode.code,
+        resultCode.status,
         customMessage,
         data
     )

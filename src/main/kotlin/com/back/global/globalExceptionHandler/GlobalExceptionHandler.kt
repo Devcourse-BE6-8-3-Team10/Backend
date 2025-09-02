@@ -29,8 +29,8 @@ class GlobalExceptionHandler {
     fun handle(ex: BadCredentialsException): ResponseEntity<RsData<Nothing?>> {
         return ResponseEntity(
             RsData(
-                ResultCode.INVALID_CREDENTIALS.code(),
-                ResultCode.INVALID_CREDENTIALS.message()
+                ResultCode.INVALID_CREDENTIALS.code,
+                ResultCode.INVALID_CREDENTIALS.defaultMessage
             ),
             HttpStatus.UNAUTHORIZED
         )

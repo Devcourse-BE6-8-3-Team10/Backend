@@ -193,7 +193,7 @@ class MemberControllerTest {
                 .content(objectMapper.writeValueAsString(request))
         )
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.resultCode").value("400-3"))
+            .andExpect(jsonPath("$.resultCode").value("400"))
             .andExpect(jsonPath("$.msg").value("현재 비밀번호가 일치하지 않습니다."))
     }
 
@@ -250,7 +250,7 @@ class MemberControllerTest {
         // when & then
         mockMvc.perform(get("/api/members/$nonExistentId"))
             .andExpect(status().isNotFound)
-            .andExpect(jsonPath("$.resultCode").value("404-1"))
+            .andExpect(jsonPath("$.resultCode").value("404"))
             .andExpect(jsonPath("$.msg").value("해당 사용자가 존재하지 않습니다."))
     }
 }

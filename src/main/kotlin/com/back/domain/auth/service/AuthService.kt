@@ -39,7 +39,7 @@ class AuthService(
 
             // 2. 인증 성공시 사용자 정보 로드
             val memberDetails = authentication.principal as? MemberDetails
-                ?: throw ServiceException(ResultCode.SERVER_ERROR.code(), "인증 정보를 가져올 수 없습니다.")
+                ?: throw ServiceException(ResultCode.INTERNAL_ERROR.code, "인증 정보를 가져올 수 없습니다.")
 
             val member = memberDetails.member
 
@@ -54,7 +54,7 @@ class AuthService(
             // 5. DTO 응답 반환
             MemberLoginResponse(accessToken, refreshToken, fromEntity(member))
         } catch (e: BadCredentialsException) {
-            throw ServiceException(ResultCode.INVALID_CREDENTIALS.code(), "이메일 또는 비밀번호가 잘못되었습니다.")
+            throw ServiceException(ResultCode.INVALID_CREDENTIALS.code, "이메일 또는 비밀번호가 잘못되었습니다.")
         }
     }
 
@@ -73,7 +73,7 @@ class AuthService(
         // 1. 토큰 유효성 확인
         if (!jwtTokenProvider.validateToken(refreshToken)) {
             throw ServiceException(
-                ResultCode.INVALID_TOKEN.code(),
+                ResultCode.INVALID_CREDENTIALS.code,
                 "유효하지 않은 리프레시 토큰입니다."
             )
         }
@@ -82,7 +82,7 @@ class AuthService(
         val email = jwtTokenProvider.getEmailFromToken(refreshToken)
         val member = memberRepository.findByEmail(email)
             .orElseThrow {
-                ServiceException(ResultCode.MEMBER_NOT_FOUND.code(), "사용자를 찾을 수 없습니다.")
+                ServiceException(ResultCode.MEMBER_NOT_FOUND.code, "사용자를 찾을 수 없습니다.")
             }
 
         // 3. 토큰 일치 여부 확인
@@ -104,11 +104,11 @@ class AuthService(
         val storedToken = member.refreshToken
         when {
             storedToken == null -> throw ServiceException(
-                ResultCode.INVALID_TOKEN.code(),
+                ResultCode.UNAUTHORIZED.code,
                 "저장된 리프레시 토큰이 없습니다."
             )
             storedToken != requestToken -> throw ServiceException(
-                ResultCode.INVALID_TOKEN.code(),
+                ResultCode.UNAUTHORIZED.code,
                 "토큰이 서버와 일치하지 않습니다."
             )
         }
@@ -119,7 +119,7 @@ class AuthService(
             memberRepository.save(member)
         } catch (e: DataIntegrityViolationException) {
             log.error("Member 저장 실패: ${member.email}", e)
-            throw ServiceException(ResultCode.SERVER_ERROR.code(), errorMessage)
+            throw ServiceException(ResultCode.INTERNAL_ERROR.code, errorMessage)
         }
     }
     // 헬퍼 함수들 - 종료

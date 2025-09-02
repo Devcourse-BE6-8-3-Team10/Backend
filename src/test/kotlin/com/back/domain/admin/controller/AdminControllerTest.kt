@@ -114,7 +114,7 @@ class AdminControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(MockMvcResultMatchers.status().isNotFound())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("404-1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("404"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("존재하지 않는 회원입니다."))
     }
 
@@ -166,7 +166,7 @@ class AdminControllerTest {
                 .content(objectMapper.writeValueAsString(request))
         )
             .andExpect(MockMvcResultMatchers.status().isNotFound())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("404-1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("404"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("존재하지 않는 회원입니다."))
     }
 
@@ -226,7 +226,7 @@ class AdminControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(MockMvcResultMatchers.status().isNotFound())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("404-2"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("404"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("존재하지 않는 특허입니다."))
     }
 
@@ -343,7 +343,7 @@ class AdminControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(MockMvcResultMatchers.status().isNotFound())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("404-2"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("404"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("해당 특허가 존재하지 않습니다."))
     }
 
