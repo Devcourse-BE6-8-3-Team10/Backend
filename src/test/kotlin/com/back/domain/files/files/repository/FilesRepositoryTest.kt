@@ -328,18 +328,48 @@ internal class FilesRepositoryTest {
         @Test
         @DisplayName("Post 삭제 시 Files cascade 삭제 확인")
         fun deletePostAndCheckFilesCascade() {
-            // given
+            // given: @BeforeEach에서 생성된 데이터가 이미 존재하는 상태에서 시작합니다.
             val initialFileCount = filesRepository.count()
-            assertThat(initialFileCount).isEqualTo(3L)
+            assertThat(initialFileCount).isEqualTo(3) // 먼저 생성된 파일 3개 확인
 
-            // when
-            postRepository.delete(testPost)
+            // 이 테스트만을 위한 격리된 데이터를 추가로 생성합니다.
+            val member = Member(
+                email = "cascade@test.com",
+                password = "password",
+                name = "Cascade Tester"
+            )
+            memberRepository.save(member)
+
+            val post = Post(
+                member = member,
+                title = "Cascade Test Post",
+                description = "This post will be deleted."
+            )
+
+            val file1 = Files(post, "f1.txt", "text/plain", 100L, "/f1", 1)
+            val file2 = Files(post, "f2.txt", "text/plain", 100L, "/f2", 2)
+            post.addPostFile(file1)
+            post.addPostFile(file2)
+            postRepository.save(post)
+
             entityManager.flush()
+            entityManager.clear()
 
-            // then
-            // Post가 삭제되면 연관된 Files도 함께 삭제되어야 함 (cascade = ALL, orphanRemoval = true)
-            val remainingFiles = filesRepository.findByPostIdOrderBySortOrderAsc(testPost.id)
-            assertThat(remainingFiles).isEmpty()
+            // DB 상태 확인: 새로 추가한 2개의 파일을 포함하여 총 파일 수가 5개가 되었는지 확인합니다.
+            assertThat(filesRepository.count()).isEqualTo(initialFileCount + 2)
+
+            // when: 새로 생성한 Post를 ID로 삭제합니다.
+            val postId = post.id
+            postRepository.deleteById(postId)
+            entityManager.flush()
+            entityManager.clear()
+
+            // then: 새로 생성했던 Post와 연관된 2개의 Files만 정확히 삭제되었는지 확인합니다.
+            assertThat(postRepository.findById(postId)).isEmpty()
+            assertThat(filesRepository.findByPostIdOrderBySortOrderAsc(postId)).isEmpty()
+
+            // 최종 파일 개수는 @BeforeEach에서 생성한 초기 개수(3개)와 같아야 합니다.
+            assertThat(filesRepository.count()).isEqualTo(initialFileCount)
         }
     }
 }
