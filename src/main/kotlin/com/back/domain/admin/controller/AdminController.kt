@@ -8,6 +8,7 @@ import com.back.domain.admin.service.AdminService
 import com.back.global.rsData.ResultCode
 import com.back.global.rsData.RsData
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -38,6 +39,8 @@ class AdminController(
 
     // 회원 상세 조회 API
     @Operation(summary = "회원 상세 조회", description = "회원 ID를 통해 회원 정보를 상세 조회합니다")
+    @ApiResponse(responseCode = "200", description = "회원 정보 조회 성공")
+    @ApiResponse(responseCode = "404", description = "존재하지 않는 회원입니다")
     @GetMapping("/members/{memberId}")
     fun getMemberDetail(@PathVariable memberId: Long): ResponseEntity<RsData<AdminMemberResponse?>> {
         val response = adminService.getMemberDetail(memberId)
@@ -73,6 +76,8 @@ class AdminController(
 
     // 특허 상세 조회 API
     @Operation(summary = "특허 상세 조회", description = "특허 ID를 통해 특허 정보를 상세 조회합니다")
+    @ApiResponse(responseCode = "200", description = "특허 정보 조회 성공")
+    @ApiResponse(responseCode = "404", description = "존재하지 않는 특허입니다")
     @GetMapping("/patents/{patentId}")
     fun getPatentDetail(@PathVariable patentId: Long): ResponseEntity<RsData<AdminPatentResponse?>> {
         val response = adminService.getPatentDetail(patentId)
