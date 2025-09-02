@@ -9,12 +9,12 @@ import jakarta.persistence.*
 @Entity
 class ChatRoom : BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY )
     @JoinColumn(name = "post_id")
     var post: Post? = null
         private set
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY )
     @JoinColumn(name = "member_id")
     var member: Member? = null
         private set

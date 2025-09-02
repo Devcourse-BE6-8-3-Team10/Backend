@@ -46,7 +46,7 @@ class Post() : BaseEntity() {
     private val _chatRooms: MutableList<ChatRoom> = mutableListOf()
     val chatRooms: List<ChatRoom> get() = _chatRooms.toList()
 
-    @OneToOne(mappedBy = "post", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToOne(mappedBy = "post", fetch = FetchType.LAZY ,cascade = [CascadeType.ALL], orphanRemoval = true)
     var trade: Trade? = null
         private set
 

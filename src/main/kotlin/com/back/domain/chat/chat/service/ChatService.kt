@@ -151,7 +151,7 @@ class ChatService(
 
     @Transactional
     fun getMyChatRooms(principal: Principal): List<ChatRoomDto> {
-        if (principal.getName().isBlank()) {
+        if (principal.name.isBlank()) {
             throw ServiceException("400-1", "로그인 하셔야 합니다.")
         }
 
