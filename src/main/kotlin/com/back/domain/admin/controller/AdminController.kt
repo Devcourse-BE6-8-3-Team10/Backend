@@ -42,8 +42,8 @@ class AdminController(
     @ApiResponse(responseCode = "200", description = "회원 정보 조회 성공")
     @ApiResponse(responseCode = "404", description = "존재하지 않는 회원입니다")
     @GetMapping("/members/{memberId}")
-    fun getMemberDetail(@PathVariable memberId: Long): ResponseEntity<RsData<AdminMemberResponse?>> {
-        val response = adminService.getMemberDetail(memberId)
+    fun getMemberDetail(@PathVariable memberId: Long): ResponseEntity<RsData<AdminMemberResponse>> {
+        val response = adminService.getMemberDetail(memberId) // 미존재 시 ServiceException(NotFound) 발생
         return ResponseEntity.ok(
             RsData(ResultCode.SUCCESS, "회원 정보 조회 성공", response)
         )
