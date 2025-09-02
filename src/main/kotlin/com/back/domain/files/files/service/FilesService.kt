@@ -103,7 +103,7 @@ class FilesService(
             throw ServiceException("400", "해당 게시글에 속하지 않는 파일입니다: $fileId")
         }
 
-        if (file.post.member!!.id != rq.memberId) {
+        if (file.post.member.id != rq.memberId) {
             throw ServiceException("403", "해당 파일을 삭제할 권한이 없습니다.")
         }
 
