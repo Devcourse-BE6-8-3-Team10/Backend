@@ -68,7 +68,7 @@ class PostService(
 
     // 게시글 삭제
     @Transactional
-    fun deletePost(postId: Long): RsData<String?> {
+    fun deletePost(postId: Long): RsData<String> {
         val member = currentMemberOrThrow
 
         // 예외처리
