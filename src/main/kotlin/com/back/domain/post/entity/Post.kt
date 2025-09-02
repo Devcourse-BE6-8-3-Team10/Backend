@@ -9,7 +9,7 @@ import com.back.global.jpa.entity.BaseEntity
 import jakarta.persistence.*
 
 @Entity
-class Post : BaseEntity {
+class Post() : BaseEntity() {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -43,34 +43,41 @@ class Post : BaseEntity {
         private set
 
     @OneToMany(mappedBy = "post", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val chatRooms: MutableList<ChatRoom> = mutableListOf()
+    private val _chatRooms: MutableList<ChatRoom> = mutableListOf()
+    val chatRooms: List<ChatRoom> get() = _chatRooms.toList()
 
     @OneToOne(mappedBy = "post", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val trade: Trade? = null
+    var trade: Trade? = null
+        private set
 
     @OneToMany(mappedBy = "post", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val postFiles: MutableList<Files> = mutableListOf()
+    private val _postFiles: MutableList<Files> = mutableListOf()
+    val postFiles: List<Files> get() = _postFiles.toList()
 
     @OneToMany(mappedBy = "post", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val favoritePosts: MutableList<FavoritePost> = mutableListOf()
+    private val _favoritePosts: MutableList<FavoritePost> = mutableListOf()
+    val favoritePosts: List<FavoritePost> get() = _favoritePosts.toList()
 
-    protected constructor()
-
+    // 실제 사용할 생성자
     constructor(
-        member: Member, title: String?, description: String?,
-        category: Category?, price: Int?, status: Status?
-    ) {
+        member: Member,
+        title: String = "",
+        description: String = "",
+        category: Category = Category.ETC,
+        price: Int = 0,
+        status: Status = Status.SALE
+    ) : this() {
         this.member = member
-        this.title = title ?: ""
-        this.description = description ?: ""
-        this.category = category ?: Category.ETC
-        this.price = price ?: 0
-        this.status = status ?: Status.SALE
+        this.title = title
+        this.description = description
+        this.category = category
+        this.price = price
+        this.status = status
         this.favoriteCnt = 0
     }
 
     @PrePersist
-    protected fun onCreate() {
+    private fun onCreate() {
         this.favoriteCnt = 0
     }
 
@@ -84,7 +91,7 @@ class Post : BaseEntity {
         ETC("기타");
 
         companion object {
-            fun from(name: String?): Category? {
+            fun from(name: String): Category? {
                 return entries.find { it.name.equals(name, ignoreCase = true) }
             }
         }
@@ -114,15 +121,20 @@ class Post : BaseEntity {
         status?.let { this.status = it }
     }
 
+
+    fun addPostFile(file: Files) {
+        _postFiles.add(file)
+    }
+
     companion object {
         fun stub(): Post {
             return Post(
-                Member("stub", "stub", "stub", ""),
-                "stub",
-                "stub",
-                Category.ETC,
-                0,
-                Status.SALE
+                member = Member("stub", "stub", "stub"),
+                title = "stub",
+                description = "stub",
+                category = Category.ETC,
+                price = 0,
+                status = Status.SALE
             )
         }
     }
