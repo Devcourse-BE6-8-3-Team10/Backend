@@ -34,8 +34,8 @@ class CustomUserDetailsService(private val memberRepository: MemberRepository) :
     // 회원 상태 검증 메서드
     private fun validateMemberStatus(member: Member) {
         when (member.status) {
-            Status.DELETED -> throw ResultCode.WITHDRAWN_MEMBER.toServiceException()
-            Status.BLOCKED -> throw ResultCode.BLOCKED_MEMBER.toServiceException()
+            Status.DELETED -> throw ServiceException(ResultCode.FORBIDDEN, "탈퇴한 회원입니다.")
+            Status.BLOCKED -> throw ServiceException(ResultCode.FORBIDDEN, "관리자에 의해 정지된 계정입니다.")
             Status.ACTIVE -> {} // 정상 상태 - 인증 진행
         }
     }
@@ -43,5 +43,5 @@ class CustomUserDetailsService(private val memberRepository: MemberRepository) :
 
 // 예외처리 확장 함수
 fun ResultCode.toServiceException(): ServiceException {
-    return ServiceException(this.code(), this.message())
+    return ServiceException(this.code, this.defaultMessage)
 }

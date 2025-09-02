@@ -12,11 +12,11 @@ abstract class BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0L  // 0L로 초기화 후 JPA가 실제값으로 변경
+    open var id: Long = 0L  // 0L로 초기화 후 JPA가 실제값으로 변경
 
     @CreatedDate
-    lateinit var createdAt: LocalDateTime  // non-null이지만 JPA가 초기화
+    open lateinit var createdAt: LocalDateTime  // non-null이지만 JPA가 초기화
 
     @LastModifiedDate
-    lateinit var modifiedAt: LocalDateTime
+    open lateinit var modifiedAt: LocalDateTime
 }

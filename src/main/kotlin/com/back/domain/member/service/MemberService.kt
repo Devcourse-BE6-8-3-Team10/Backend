@@ -34,7 +34,7 @@ class MemberService(
     fun signup(request: MemberSignupRequest) {
         // 1. 이메일 중복 검사
         if (memberRepository.existsByEmail(request.email)) {
-            throw ServiceException(ResultCode.DUPLICATE_EMAIL.code(), "이미 사용 중인 이메일입니다.")
+            throw ServiceException(ResultCode.BAD_REQUEST.code, "이미 사용 중인 이메일입니다.")
         }
 
         val member = Member(
@@ -53,7 +53,7 @@ class MemberService(
         val foundMember = memberRepository.findById(member.id)
             .orElseThrow {
                 ServiceException(
-                    ResultCode.MEMBER_NOT_FOUND.code(),
+                    ResultCode.MEMBER_NOT_FOUND.code,
                     "회원 정보가 존재하지 않습니다."
                 )
             }
@@ -69,7 +69,7 @@ class MemberService(
         val foundMember = memberRepository.findById(member.id)
             .orElseThrow {
                 ServiceException(
-                    ResultCode.MEMBER_NOT_FOUND.code(),
+                    ResultCode.MEMBER_NOT_FOUND.code,
                     "회원 정보가 존재하지 않습니다."
                 )
             }
@@ -85,7 +85,7 @@ class MemberService(
         val foundMember = memberRepository.findById(member.id)
             .orElseThrow {
                 ServiceException(
-                    ResultCode.MEMBER_NOT_FOUND.code(),
+                    ResultCode.MEMBER_NOT_FOUND.code,
                     "회원 정보가 존재하지 않습니다."
                 )
             }
@@ -98,14 +98,14 @@ class MemberService(
         // 3. 비밀번호 변경 요청이 있을 경우만 현재 비밀번호 확인
         request.newPassword?.takeIf { it.isNotBlank() }?.let { newPassword ->
             val currentPassword = request.currentPassword
-                ?: throw ServiceException(ResultCode.BAD_REQUEST.code(), "현재 비밀번호를 입력해주세요.")
+                ?: throw ServiceException(ResultCode.BAD_REQUEST.code, "현재 비밀번호를 입력해주세요.")
 
             if (currentPassword.isBlank()) {
-                throw ServiceException(ResultCode.BAD_REQUEST.code(), "현재 비밀번호를 입력해주세요.")
+                throw ServiceException(ResultCode.BAD_REQUEST.code, "현재 비밀번호를 입력해주세요.")
             }
 
             if (!passwordEncoder.matches(currentPassword, foundMember.password)) {
-                throw ServiceException(ResultCode.INVALID_PASSWORD.code(), "현재 비밀번호가 일치하지 않습니다.")
+                throw ServiceException(ResultCode.BAD_REQUEST.code, "현재 비밀번호가 일치하지 않습니다.")
             }
 
             foundMember.updatePassword(passwordEncoder.encode(newPassword))
@@ -119,7 +119,7 @@ class MemberService(
         val member = memberRepository.findById(id)
             .orElseThrow {
                 ServiceException(
-                    ResultCode.MEMBER_NOT_FOUND.code(),
+                    ResultCode.MEMBER_NOT_FOUND.code,
                     "해당 사용자가 존재하지 않습니다."
                 )
             }
@@ -131,13 +131,13 @@ class MemberService(
     fun uploadProfileImage(memberId: Long, file: MultipartFile): String {
         // file이 null이거나 비어있는 경우 예외 처리
         if (file.isEmpty) {
-            throw ServiceException(ResultCode.BAD_REQUEST.code(), "업로드할 파일이 없습니다.")
+            throw ServiceException(ResultCode.BAD_REQUEST.code, "업로드할 파일이 없습니다.")
         }
 
         val member = memberRepository.findById(memberId)
             .orElseThrow {
                 ServiceException(
-                    ResultCode.MEMBER_NOT_FOUND.code(),
+                    ResultCode.MEMBER_NOT_FOUND.code,
                     "회원을 찾을 수 없습니다."
                 )
             }
@@ -148,18 +148,18 @@ class MemberService(
         return try {
             val fileContent = file.bytes
             val originalFilename = file.originalFilename
-                ?: throw ServiceException(ResultCode.BAD_REQUEST.code(), "파일명이 없습니다.")
+                ?: throw ServiceException(ResultCode.BAD_REQUEST.code, "파일명이 없습니다.")
             val contentType = file.contentType
-                ?: throw ServiceException(ResultCode.BAD_REQUEST.code(), "파일 타입을 확인할 수 없습니다.")
+                ?: throw ServiceException(ResultCode.BAD_REQUEST.code, "파일 타입을 확인할 수 없습니다.")
 
             // 파일 검증
             val allowed = setOf("image/jpeg", "image/png", "image/gif", "image/webp")
             if (contentType !in allowed) {
-                throw ServiceException(ResultCode.BAD_REQUEST.code(), "이미지 파일만 업로드 가능합니다.")
+                throw ServiceException(ResultCode.BAD_REQUEST.code, "이미지 파일만 업로드 가능합니다.")
             }
             val maxSize = 5 * 1024 * 1024L // 5MB
             if (file.size > maxSize) {
-                throw ServiceException(ResultCode.BAD_REQUEST.code(), "파일 크기가 5MB를 초과합니다.")
+                throw ServiceException(ResultCode.BAD_REQUEST.code, "파일 크기가 5MB를 초과합니다.")
             }
             val cleanedFilename = StringUtils.cleanPath(originalFilename)
 
@@ -185,10 +185,10 @@ class MemberService(
             newProfileUrl
         } catch (e: IOException) {
             log.error("IOException while processing profile image. memberId={}", memberId, e)
-            throw ServiceException(ResultCode.SERVER_ERROR.code(), "프로필 이미지 처리 중 오류가 발생했습니다.")
+            throw ServiceException(ResultCode.INTERNAL_ERROR.code, "프로필 이미지 처리 중 오류가 발생했습니다.")
         } catch (e: Exception) {
             log.error("Unexpected error during profile upload. memberId={}", memberId, e)
-            throw ServiceException(ResultCode.FILE_UPLOAD_FAIL.code(), "프로필 이미지 업로드에 실패했습니다.")
+            throw ServiceException(ResultCode.FILE_PROCESSING_ERROR.code, "프로필 이미지 업로드에 실패했습니다.")
         }
     }
 
@@ -198,14 +198,14 @@ class MemberService(
         val member = memberRepository.findById(memberId)
             .orElseThrow {
                 ServiceException(
-                    ResultCode.MEMBER_NOT_FOUND.code(),
+                    ResultCode.MEMBER_NOT_FOUND.code,
                     "회원을 찾을 수 없습니다."
                 )
             }
 
         val profileUrl = member.profileUrl
         if (profileUrl.isNullOrEmpty()) {
-            throw ServiceException(ResultCode.BAD_REQUEST.code(), "삭제할 프로필 이미지가 없습니다.")
+            throw ServiceException(ResultCode.BAD_REQUEST.code, "삭제할 프로필 이미지가 없습니다.")
         }
 
         try {
@@ -213,7 +213,7 @@ class MemberService(
             member.updateProfileUrl(null)
             memberRepository.save(member)
         } catch (e: Exception) {
-            throw ServiceException(ResultCode.FILE_DELETE_FAIL.code(), "프로필 이미지 삭제 실패.")
+            throw ServiceException(ResultCode.FILE_PROCESSING_ERROR.code, "프로필 이미지 삭제 실패.")
         }
     }
 
@@ -222,7 +222,7 @@ class MemberService(
         val member = memberRepository.findById(memberId)
             .orElseThrow {
                 ServiceException(
-                    ResultCode.MEMBER_NOT_FOUND.code(),
+                    ResultCode.MEMBER_NOT_FOUND.code,
                     "회원을 찾을 수 없습니다."
                 )
             }
@@ -232,13 +232,13 @@ class MemberService(
     // 회원 확인 (비밀번호 찾기용)
     fun verifyMember(request: FindPasswordRequest) {
         // 이름과 이메일 null 체크
-        val name = request.name ?: throw ServiceException(ResultCode.BAD_REQUEST.code(), "이름을 입력해주세요.")
-        val email = request.email ?: throw ServiceException(ResultCode.BAD_REQUEST.code(), "이메일을 입력해주세요.")
+        val name = request.name ?: throw ServiceException(ResultCode.BAD_REQUEST.code, "이름을 입력해주세요.")
+        val email = request.email ?: throw ServiceException(ResultCode.BAD_REQUEST.code, "이메일을 입력해주세요.")
 
         // 이름과 이메일로 회원 존재 여부만 확인 (더 빠른 쿼리)
         val exists = memberRepository.existsByNameAndEmail(name, email)
         if (!exists) {
-            throw ServiceException(ResultCode.MEMBER_NOT_FOUND.code(), "해당 정보와 일치하는 회원이 없습니다.")
+            throw ServiceException(ResultCode.MEMBER_NOT_FOUND.code, "해당 정보와 일치하는 회원이 없습니다.")
         }
     }
 
@@ -246,28 +246,28 @@ class MemberService(
     @Transactional
     fun findAndUpdatePassword(request: FindPasswordRequest) {
         // 1. 이름과 이메일 null 체크
-        val name = request.name ?: throw ServiceException(ResultCode.BAD_REQUEST.code(), "이름을 입력해주세요.")
-        val email = request.email ?: throw ServiceException(ResultCode.BAD_REQUEST.code(), "이메일을 입력해주세요.")
+        val name = request.name ?: throw ServiceException(ResultCode.BAD_REQUEST.code, "이름을 입력해주세요.")
+        val email = request.email ?: throw ServiceException(ResultCode.BAD_REQUEST.code, "이메일을 입력해주세요.")
 
         // 2. 이름과 이메일로 회원 찾기
         val member = memberRepository.findByNameAndEmail(name, email)
             .orElseThrow {
                 ServiceException(
-                    ResultCode.MEMBER_NOT_FOUND.code(),
+                    ResultCode.MEMBER_NOT_FOUND.code,
                     "해당 정보와 일치하는 회원이 없습니다."
                 )
             }
 
         // 3. 새 비밀번호와 확인 비밀번호가 제공되었는지 확인
         val newPassword = request.newPassword?.takeIf { it.isNotBlank() }
-            ?: throw ServiceException(ResultCode.BAD_REQUEST.code(), "새 비밀번호를 입력해주세요.")
+            ?: throw ServiceException(ResultCode.BAD_REQUEST.code, "새 비밀번호를 입력해주세요.")
 
         val confirmPassword = request.confirmPassword?.takeIf { it.isNotBlank() }
-            ?: throw ServiceException(ResultCode.BAD_REQUEST.code(), "확인 비밀번호를 입력해주세요.")
+            ?: throw ServiceException(ResultCode.BAD_REQUEST.code, "확인 비밀번호를 입력해주세요.")
 
         // 4. 새 비밀번호와 확인 비밀번호 일치 여부 확인
         if (newPassword != confirmPassword) {
-            throw ServiceException(ResultCode.BAD_REQUEST.code(), "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.")
+            throw ServiceException(ResultCode.BAD_REQUEST.code, "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.")
         }
 
         // 5. 새 비밀번호로 업데이트
