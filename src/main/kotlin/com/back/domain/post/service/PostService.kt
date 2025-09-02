@@ -53,7 +53,7 @@ class PostService(
         val post = getPostOrThrow(postId)
 
         // 본인 게시글인지 확인
-        if (post.member?.id != member.id) {
+        if (post.member.id != member.id) {
             throw ServiceException("403", "자신의 게시글만 수정할 수 있습니다.")
         }
 
@@ -76,7 +76,7 @@ class PostService(
             ?: throw ServiceException("404", "이미 삭제되었거나 존재하지 않는 게시글입니다.")
 
         // 본인 게시글인지 확인
-        if (post.member?.id != member.id) {
+        if (post.member.id != member.id) {
             throw ServiceException("403", "자신의 게시글만 삭제할 수 있습니다.")
         }
 
