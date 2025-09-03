@@ -14,6 +14,7 @@ import com.back.domain.member.repository.MemberRepository
 import com.back.domain.post.repository.PostRepository
 import com.back.global.exception.ServiceException
 import org.slf4j.LoggerFactory
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.security.Principal
@@ -79,6 +80,14 @@ class ChatService(
             }
     }
 
+    @Cacheable("이메일로 멤버 찾기") // 키 값을 넣어주면 캐시값이 갱신됨
+    fun getMemberByEmail(email:String) : Member{
+        return memberRepository.findByEmail(email)
+            .orElseThrow {ServiceException("404-3", "존재하지 않는 사용자입니다.") }
+    }
+
+
+
     @Transactional
     fun createChatRoom(postId: Long, userEmail: String): Long {
         if (userEmail.isBlank()) {
@@ -86,8 +95,7 @@ class ChatService(
         }
 
         // 이메일로 Member 엔티티 조회
-        val requester = memberRepository.findByEmail(userEmail)
-            .orElseThrow { ServiceException("404-3", "존재하지 않는 사용자입니다.") }
+        val requester = getMemberByEmail(userEmail)
 
         val post = postRepository.findById(postId)
             .orElseThrow { ServiceException("404-1", "존재하지 않는 게시글입니다.") }
@@ -149,6 +157,13 @@ class ChatService(
         return null // 기존 채팅방 없음
     }
 
+    @Cacheable("참여자 조회")
+    fun getRoomParticipant(id:Long) : List<RoomParticipant> {
+        return roomParticipantRepository
+            .findByMemberIdAndActiveTrueOrderByCreatedAtDesc(id)
+    }
+
+    //내가 속한 채팅방 목록 조회
     @Transactional
     fun getMyChatRooms(principal: Principal): List<ChatRoomDto> {
         if (principal.name.isBlank()) {
@@ -156,11 +171,9 @@ class ChatService(
         }
 
         // 이메일로 Member 엔티티 조회
-        val member = memberRepository.findByEmail(principal.name)
-            .orElseThrow { ServiceException("404-3", "존재하지 않는 사용자입니다.") }
+        val member = getMemberByEmail(principal.name)
 
-        val participations = roomParticipantRepository
-            .findByMemberIdAndActiveTrueOrderByCreatedAtDesc(member.id)
+        val participations = getRoomParticipant(member.id)
 
         // RoomParticipant에서 ChatRoom 추출 및 DTO 변환
         return participations.map { participation ->
