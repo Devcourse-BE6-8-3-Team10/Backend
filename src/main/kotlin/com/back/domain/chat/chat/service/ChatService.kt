@@ -53,8 +53,7 @@ class ChatService(
 
     @Transactional
     fun getChatRoomMessages(chatRoomId: Long, principal: Principal): List<MessageDto> {
-        val member = memberRepository.findByEmail(principal.getName())
-            .orElseThrow { ServiceException("404-3", "존재하지 않는 사용자입니다.") }
+        val member = getMemberByEmail(principal.name)
         val requesterId = member.id
 
         // 채팅방 존재 확인
@@ -194,8 +193,7 @@ class ChatService(
 
     @Transactional
     fun leaveChatRoom(chatRoomId: Long, principal: Principal) {
-        val member = memberRepository.findByEmail(principal.getName())
-            .orElseThrow { ServiceException("404-3", "존재하지 않는 사용자입니다.") }
+        val member = getMemberByEmail(principal.name)
 
         val participant = roomParticipantRepository
             .findByChatRoomIdAndMemberIdAndActiveTrue(chatRoomId, member.id)
