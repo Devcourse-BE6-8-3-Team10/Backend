@@ -14,6 +14,7 @@ import com.back.domain.member.repository.MemberRepository
 import com.back.domain.post.repository.PostRepository
 import com.back.global.exception.ServiceException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -26,7 +27,10 @@ class ChatService(
     private val chatRoomRepository: ChatRoomRepository,
     private val postRepository: PostRepository,
     private val roomParticipantRepository: RoomParticipantRepository,
-    private val redisMessageService: RedisMessageService
+    private val redisMessageService: RedisMessageService,
+
+    //self 프록시
+    private val self : ObjectProvider<ChatService>
 ) {
     companion object {
         private val log = LoggerFactory.getLogger(ChatService::class.java)
@@ -53,7 +57,7 @@ class ChatService(
 
     @Transactional
     fun getChatRoomMessages(chatRoomId: Long, principal: Principal): List<MessageDto> {
-        val member = getMemberByEmail(principal.name)
+        val member = self.getObject().getMemberByEmail(principal.name)
         val requesterId = member.id
 
         // 채팅방 존재 확인
@@ -79,7 +83,7 @@ class ChatService(
             }
     }
 
-    @Cacheable("이메일로 멤버 찾기") // 키 값을 넣어주면 캐시값이 갱신됨
+    @Cacheable("이메일로 멤버 찾기", key = "#email") //캐시 갱신하려면 cacheput
     fun getMemberByEmail(email:String) : Member{
         return memberRepository.findByEmail(email)
             .orElseThrow {ServiceException("404-3", "존재하지 않는 사용자입니다.") }
@@ -94,7 +98,7 @@ class ChatService(
         }
 
         // 이메일로 Member 엔티티 조회
-        val requester = getMemberByEmail(userEmail)
+        val requester = self.getObject().getMemberByEmail(userEmail)
 
         val post = postRepository.findById(postId)
             .orElseThrow { ServiceException("404-1", "존재하지 않는 게시글입니다.") }
@@ -156,7 +160,7 @@ class ChatService(
         return null // 기존 채팅방 없음
     }
 
-    @Cacheable("참여자 조회")
+    @Cacheable("참여자 조회", key = "#id")
     fun getRoomParticipant(id:Long) : List<RoomParticipant> {
         return roomParticipantRepository
             .findByMemberIdAndActiveTrueOrderByCreatedAtDesc(id)
@@ -170,9 +174,9 @@ class ChatService(
         }
 
         // 이메일로 Member 엔티티 조회
-        val member = getMemberByEmail(principal.name)
+        val member = self.getObject().getMemberByEmail(principal.name)
 
-        val participations = getRoomParticipant(member.id)
+        val participations = self.getObject().getRoomParticipant(member.id)
 
         // RoomParticipant에서 ChatRoom 추출 및 DTO 변환
         return participations.map { participation ->
@@ -193,7 +197,7 @@ class ChatService(
 
     @Transactional
     fun leaveChatRoom(chatRoomId: Long, principal: Principal) {
-        val member = getMemberByEmail(principal.name)
+        val member = self.getObject().getMemberByEmail(principal.name)
 
         val participant = roomParticipantRepository
             .findByChatRoomIdAndMemberIdAndActiveTrue(chatRoomId, member.id)
