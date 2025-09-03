@@ -221,7 +221,7 @@ internal class ChatServiceTest {
             given(principal.name).willReturn("test@test.com")
             given(memberRepository.findByEmail("test@test.com")).willReturn(Optional.of(testUser))
             given(chatRoomRepository.existsById(chatRoomId)).willReturn(true)
-            given(roomParticipantRepository.existsByChatRoomIdAndMemberIdAndIsActiveTrue(chatRoomId, testUser.id))
+            given(roomParticipantRepository.existsByChatRoomIdAndMemberIdAndActiveTrue(chatRoomId, testUser.id))
                 .willReturn(true)
 
             val messages = listOf(testMessage)
@@ -259,7 +259,7 @@ internal class ChatServiceTest {
             given(principal.name).willReturn("test@test.com")
             given(memberRepository.findByEmail("test@test.com")).willReturn(Optional.of(testUser))
             given(chatRoomRepository.existsById(chatRoomId)).willReturn(true)
-            given(roomParticipantRepository.existsByChatRoomIdAndMemberIdAndIsActiveTrue(chatRoomId, testUser.id))
+            given(roomParticipantRepository.existsByChatRoomIdAndMemberIdAndActiveTrue(chatRoomId, testUser.id))
                 .willReturn(false)
 
             // When & Then
@@ -281,7 +281,7 @@ internal class ChatServiceTest {
             given(memberRepository.findByEmail("test@test.com")).willReturn(Optional.of(testUser))
 
             val participations = listOf(testParticipant)
-            given(roomParticipantRepository.findByMemberIdAndIsActiveTrueOrderByCreatedAtDesc(testUser.id))
+            given(roomParticipantRepository.findByMemberIdAndActiveTrueOrderByCreatedAtDesc(testUser.id))
                 .willReturn(participations)
             given(messageRepository.findFirstByChatRoomIdOrderByCreatedAtDesc(testChatRoom.id))
                 .willReturn(testMessage)
@@ -319,9 +319,9 @@ internal class ChatServiceTest {
             val chatRoomId = 1L
             given(principal.name).willReturn("test@test.com")
             given(memberRepository.findByEmail("test@test.com")).willReturn(Optional.of(testUser))
-            given(roomParticipantRepository.findByChatRoomIdAndMemberIdAndIsActiveTrue(chatRoomId, testUser.id))
+            given(roomParticipantRepository.findByChatRoomIdAndMemberIdAndActiveTrue(chatRoomId, testUser.id))
                 .willReturn(Optional.of(testParticipant))
-            given(roomParticipantRepository.existsByChatRoomIdAndIsActiveTrue(chatRoomId)).willReturn(true)
+            given(roomParticipantRepository.existsByChatRoomIdAndActiveTrue(chatRoomId)).willReturn(true)
 
             // When & Then
             assertThatCode { chatService.leaveChatRoom(chatRoomId, principal) }
@@ -330,7 +330,7 @@ internal class ChatServiceTest {
             // 검증 - 실제 비즈니스 로직은 성공했으므로 간단하게 검증
             verify(roomParticipantRepository).save(testParticipant)
             // Redis 메시지 전송은 로그에서 성공 확인됨 - ArgumentMatchers 문제로 인해 검증 생략
-            assertThat(testParticipant.isActive).isFalse
+            assertThat(testParticipant.active).isFalse
             assertThat(testParticipant.leftAt).isNotNull
         }
 
@@ -341,7 +341,7 @@ internal class ChatServiceTest {
             val chatRoomId = 1L
             given(principal.name).willReturn("test@test.com")
             given(memberRepository.findByEmail("test@test.com")).willReturn(Optional.of(testUser))
-            given(roomParticipantRepository.findByChatRoomIdAndMemberIdAndIsActiveTrue(chatRoomId, testUser.id))
+            given(roomParticipantRepository.findByChatRoomIdAndMemberIdAndActiveTrue(chatRoomId, testUser.id))
                 .willReturn(Optional.empty())
 
             // When & Then
@@ -361,7 +361,7 @@ internal class ChatServiceTest {
             // Given
             val chatRoomId = 1L
             val memberId = 1L
-            given(roomParticipantRepository.existsByChatRoomIdAndMemberIdAndIsActiveTrue(chatRoomId, memberId))
+            given(roomParticipantRepository.existsByChatRoomIdAndMemberIdAndActiveTrue(chatRoomId, memberId))
                 .willReturn(true)
 
             // When
@@ -377,7 +377,7 @@ internal class ChatServiceTest {
             // Given
             val chatRoomId = 1L
             val memberId = 1L
-            given(roomParticipantRepository.existsByChatRoomIdAndMemberIdAndIsActiveTrue(chatRoomId, memberId))
+            given(roomParticipantRepository.existsByChatRoomIdAndMemberIdAndActiveTrue(chatRoomId, memberId))
                 .willReturn(false)
 
             // When

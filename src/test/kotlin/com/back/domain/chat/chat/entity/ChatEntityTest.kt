@@ -191,7 +191,7 @@ internal class ChatEntityTest {
             assertThat(participant.chatRoom).isEqualTo(chatRoom)
             assertThat(participant.member).isEqualTo(testUser)
             assertThat(participant.leftAt).isNull()
-            assertThat(participant.isActive).isTrue
+            assertThat(participant.active).isTrue
         }
 
         @Test
@@ -206,7 +206,7 @@ internal class ChatEntityTest {
             // Then
             assertThat(participant.chatRoom).isEqualTo(chatRoom)
             assertThat(participant.member).isEqualTo(testUser)
-            assertThat(participant.isActive).isTrue
+            assertThat(participant.active).isTrue
             assertThat(participant.leftAt).isNull()
         }
 
@@ -221,14 +221,14 @@ internal class ChatEntityTest {
             participant.leave()
 
             // Then
-            assertThat(participant.isActive).isFalse
+            assertThat(participant.active).isFalse
             assertThat(participant.leftAt).isNotNull
 
             // When - 채팅방 재활성화
             participant.activate()
 
             // Then
-            assertThat(participant.isActive).isTrue
+            assertThat(participant.active).isTrue
             assertThat(participant.leftAt).isNull()
         }
 
@@ -240,21 +240,21 @@ internal class ChatEntityTest {
             val participant = RoomParticipant(chatRoom, testUser)
 
             // 초기 상태 확인
-            assertThat(participant.isActive).isTrue
+            assertThat(participant.active).isTrue
             assertThat(participant.leftAt).isNull()
 
             // When - 채팅방 나가기
             participant.leave()
 
             // Then
-            assertThat(participant.isActive).isFalse
+            assertThat(participant.active).isFalse
             assertThat(participant.leftAt).isNotNull
 
             // When - 재참여
             participant.rejoin()
 
             // Then
-            assertThat(participant.isActive).isTrue
+            assertThat(participant.active).isTrue
             assertThat(participant.leftAt).isNull()
         }
     }

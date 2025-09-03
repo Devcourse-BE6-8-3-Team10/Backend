@@ -227,9 +227,9 @@ internal class ChatRepositoryTest {
 
         @Test
         @DisplayName("채팅방과 사용자로 활성 참여자 존재 확인")
-        fun existsByChatRoomIdAndMemberIdAndIsActiveTrue() {
+        fun existsByChatRoomIdAndMemberIdAndActiveTrue() {
             // When
-            val exists = roomParticipantRepository.existsByChatRoomIdAndMemberIdAndIsActiveTrue(
+            val exists = roomParticipantRepository.existsByChatRoomIdAndMemberIdAndActiveTrue(
                 testChatRoom.id, testUser.id
             )
 
@@ -239,9 +239,9 @@ internal class ChatRepositoryTest {
 
         @Test
         @DisplayName("채팅방의 활성 참여자 목록 조회")
-        fun findByChatRoomIdAndIsActiveTrue() {
+        fun findByChatRoomIdAndActiveTrue() {
             // When
-            val participants = roomParticipantRepository.findByChatRoomIdAndIsActiveTrue(testChatRoom.id)
+            val participants = roomParticipantRepository.findByChatRoomIdAndActiveTrue(testChatRoom.id)
 
             // Then
             assertThat(participants).hasSize(2)

@@ -14,6 +14,8 @@ import com.back.domain.member.repository.MemberRepository
 import com.back.domain.post.repository.PostRepository
 import com.back.global.exception.ServiceException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.ObjectProvider
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.security.Principal
@@ -25,7 +27,10 @@ class ChatService(
     private val chatRoomRepository: ChatRoomRepository,
     private val postRepository: PostRepository,
     private val roomParticipantRepository: RoomParticipantRepository,
-    private val redisMessageService: RedisMessageService
+    private val redisMessageService: RedisMessageService,
+
+    //self 프록시
+    private val self : ObjectProvider<ChatService>
 ) {
     companion object {
         private val log = LoggerFactory.getLogger(ChatService::class.java)
@@ -48,12 +53,11 @@ class ChatService(
 
     @Transactional
     fun isParticipant(chatRoomId: Long, memberId: Long): Boolean =
-        roomParticipantRepository.existsByChatRoomIdAndMemberIdAndIsActiveTrue(chatRoomId, memberId)
+        roomParticipantRepository.existsByChatRoomIdAndMemberIdAndActiveTrue(chatRoomId, memberId)
 
     @Transactional
     fun getChatRoomMessages(chatRoomId: Long, principal: Principal): List<MessageDto> {
-        val member = memberRepository.findByEmail(principal.getName())
-            .orElseThrow { ServiceException("404-3", "존재하지 않는 사용자입니다.") }
+        val member = self.getObject().getMemberByEmail(principal.name)
         val requesterId = member.id
 
         // 채팅방 존재 확인
@@ -79,6 +83,14 @@ class ChatService(
             }
     }
 
+    @Cacheable("이메일로 멤버 찾기", key = "#email") //캐시 갱신하려면 cacheput
+    fun getMemberByEmail(email:String) : Member{
+        return memberRepository.findByEmail(email)
+            .orElseThrow {ServiceException("404-3", "존재하지 않는 사용자입니다.") }
+    }
+
+
+
     @Transactional
     fun createChatRoom(postId: Long, userEmail: String): Long {
         if (userEmail.isBlank()) {
@@ -86,8 +98,7 @@ class ChatService(
         }
 
         // 이메일로 Member 엔티티 조회
-        val requester = memberRepository.findByEmail(userEmail)
-            .orElseThrow { ServiceException("404-3", "존재하지 않는 사용자입니다.") }
+        val requester = self.getObject().getMemberByEmail(userEmail)
 
         val post = postRepository.findById(postId)
             .orElseThrow { ServiceException("404-1", "존재하지 않는 게시글입니다.") }
@@ -149,18 +160,23 @@ class ChatService(
         return null // 기존 채팅방 없음
     }
 
+    @Cacheable("참여자 조회", key = "#id")
+    fun getRoomParticipant(id:Long) : List<RoomParticipant> {
+        return roomParticipantRepository
+            .findByMemberIdAndActiveTrueOrderByCreatedAtDesc(id)
+    }
+
+    //내가 속한 채팅방 목록 조회
     @Transactional
     fun getMyChatRooms(principal: Principal): List<ChatRoomDto> {
-        if (principal.getName().isBlank()) {
+        if (principal.name.isBlank()) {
             throw ServiceException("400-1", "로그인 하셔야 합니다.")
         }
 
         // 이메일로 Member 엔티티 조회
-        val member = memberRepository.findByEmail(principal.getName())
-            .orElseThrow { ServiceException("404-3", "존재하지 않는 사용자입니다.") }
+        val member = self.getObject().getMemberByEmail(principal.name)
 
-        val participations = roomParticipantRepository
-            .findByMemberIdAndIsActiveTrueOrderByCreatedAtDesc(member.id)
+        val participations = self.getObject().getRoomParticipant(member.id)
 
         // RoomParticipant에서 ChatRoom 추출 및 DTO 변환
         return participations.map { participation ->
@@ -181,11 +197,10 @@ class ChatService(
 
     @Transactional
     fun leaveChatRoom(chatRoomId: Long, principal: Principal) {
-        val member = memberRepository.findByEmail(principal.getName())
-            .orElseThrow { ServiceException("404-3", "존재하지 않는 사용자입니다.") }
+        val member = self.getObject().getMemberByEmail(principal.name)
 
         val participant = roomParticipantRepository
-            .findByChatRoomIdAndMemberIdAndIsActiveTrue(chatRoomId, member.id)
+            .findByChatRoomIdAndMemberIdAndActiveTrue(chatRoomId, member.id)
             .orElseThrow { ServiceException("404-5", "채팅방 참여자가 아닙니다.") }
 
         // 나가기 전에 다른 참여자들에게 알림 메시지 전송
@@ -194,7 +209,7 @@ class ChatService(
         participant.leave()
         roomParticipantRepository.save(participant)
 
-        val hasActiveParticipants = roomParticipantRepository.existsByChatRoomIdAndIsActiveTrue(chatRoomId)
+        val hasActiveParticipants = roomParticipantRepository.existsByChatRoomIdAndActiveTrue(chatRoomId)
 
         if (!hasActiveParticipants) {
             val chatRoom = chatRoomRepository.findById(chatRoomId)
